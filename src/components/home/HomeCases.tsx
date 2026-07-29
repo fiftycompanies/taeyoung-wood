@@ -13,7 +13,7 @@ export function HomeCases() {
         <div className="gp-reveal gp-section-header">
           <p className="gp-label">CASE STUDIES</p>
           <h2 className="gp-h2">시공 사례</h2>
-          <p className="gp-sub">아파트 홈인테리어 목공·단열 부분시공 현장 (실사진은 순차 교체 예정)</p>
+          <p className="gp-sub">아파트 홈인테리어 목공·단열 부분시공 현장</p>
           <p style={{ marginTop: 8, fontSize: 14, color: "#737373" }}>20년 경력 · 서울·경기 전역 시공</p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 24 }}>
@@ -21,7 +21,6 @@ export function HomeCases() {
             <article key={c.title} className="gp-card reveal">
               <div style={{ position: "relative", aspectRatio: "4/3", background: "#eee" }}>
                 <img src={c.img} alt={c.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                <span style={{ position: "absolute", top: 12, left: 12, padding: "4px 10px", background: "rgba(255,255,255,0.95)", color: "#1B5BD8", fontSize: 12, fontWeight: 700, borderRadius: 999 }}>준비 중</span>
               </div>
               <div style={{ padding: 20 }}>
                 <div style={{ fontSize: 12, color: "#737373", marginBottom: 8 }}>{c.date}</div>

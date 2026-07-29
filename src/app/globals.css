@@ -295,16 +295,13 @@ body.tmpl-gana-pro { min-height: 100vh; display: flex; flex-direction: column; }
 .gp-hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22); border-radius: 999px; font-size: 13px; font-weight: 600; color: #fff; backdrop-filter: blur(6px); margin-bottom: 20px; }
 .gp-hero-pulse { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,0.6); animation: gp-pulse 1.6s infinite; }
 @keyframes gp-pulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
-.gp-hero-h1 { font-size: clamp(38px, 6.8vw, 56px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: #fff; margin: 0; }
-.gp-hero-sub { margin-top: 20px; font-size: 17px; line-height: 1.6; color: rgba(255,255,255,0.9); }
+.gp-hero-h1 { font-size: clamp(38px, 6.8vw, 56px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: #fff; margin: 0; word-break: keep-all; }
+.gp-hero-sub { margin-top: 20px; font-size: 17px; line-height: 1.6; color: rgba(255,255,255,0.9); word-break: keep-all; }
 .gp-hero-badges { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px; }
 .gp-hero-badge-item { padding: 8px 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; font-size: 13px; font-weight: 600; color: #fff; }
 .gp-hero-ctas { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
 .gp-hero-cta-primary { display: inline-flex; align-items: center; gap: 8px; padding: 16px 28px; background: var(--site-theme-color); color: #fff; font-size: 17px; font-weight: 800; border-radius: 999px; text-decoration: none; box-shadow: 0 12px 40px -8px rgba(27,91,216,0.6); transition: transform .2s; }
 .gp-hero-cta-primary:hover { transform: translateY(-2px); }
-.gp-hero-stats { margin-top: 40px; display: flex; gap: 32px; flex-wrap: wrap; }
-.gp-hero-stat-num { font-size: 30px; font-weight: 800; color: #93bbff; letter-spacing: -0.02em; }
-.gp-hero-stat-label { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px; }
 
 /* Trust bar */
 .gp-trust { background: rgba(0,0,0,0.9); padding: 20px 0; }

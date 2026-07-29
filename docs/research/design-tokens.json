@@ -1,0 +1,412 @@
+{
+  "sources": [
+    "https://ganaplumbing.revrun.kr/"
+  ],
+  "measuredAt": "(stamp at save time)",
+  "page": {
+    "bodyBg": "#ffffff",
+    "bodyColor": "#1f2937",
+    "bodyFont": "Pretendard Variable"
+  },
+  "palette": {
+    "textColors": [
+      [
+        "#121212",
+        279
+      ],
+      [
+        "#1b5bd8",
+        134
+      ],
+      [
+        "#737373",
+        115
+      ],
+      [
+        "#ffffff",
+        105
+      ],
+      [
+        "#1f2937",
+        13
+      ],
+      [
+        "#999999",
+        5
+      ],
+      [
+        "#666666",
+        4
+      ],
+      [
+        "#16a34a",
+        2
+      ],
+      [
+        "#93bbff",
+        1
+      ],
+      [
+        "#3b82f6",
+        1
+      ]
+    ],
+    "backgroundColors": [
+      [
+        "#ffffff",
+        21038
+      ],
+      [
+        "#f5f5f5",
+        6806
+      ],
+      [
+        "#000000",
+        1304
+      ],
+      [
+        "#1a1a1a",
+        1296
+      ],
+      [
+        "#121212",
+        607
+      ],
+      [
+        "#1b5bd8",
+        409
+      ],
+      [
+        "#111827",
+        94
+      ],
+      [
+        "#d1d5db",
+        35
+      ],
+      [
+        "#22c55e",
+        7
+      ],
+      [
+        "#03c75a",
+        4
+      ]
+    ],
+    "borderColors": [
+      [
+        "#ebebeb",
+        28
+      ],
+      [
+        "#000000",
+        6
+      ],
+      [
+        "#1b5bd8",
+        2
+      ],
+      [
+        "#ffffff",
+        1
+      ]
+    ]
+  },
+  "typography": {
+    "families": [
+      [
+        "Pretendard",
+        636
+      ],
+      [
+        "Pretendard Variable",
+        22
+      ],
+      [
+        "system-ui",
+        3
+      ]
+    ],
+    "sizeScalePx": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20,
+      22,
+      30,
+      36,
+      56
+    ],
+    "weights": [
+      [
+        "400",
+        406
+      ],
+      [
+        "600",
+        141
+      ],
+      [
+        "700",
+        105
+      ],
+      [
+        "500",
+        7
+      ],
+      [
+        "800",
+        2
+      ]
+    ],
+    "lineHeights": [
+      [
+        "24px",
+        274
+      ],
+      [
+        "19.5px",
+        126
+      ],
+      [
+        "21px",
+        89
+      ],
+      [
+        "18px",
+        60
+      ],
+      [
+        "16.5px",
+        27
+      ],
+      [
+        "27px",
+        21
+      ],
+      [
+        "15px",
+        16
+      ],
+      [
+        "30px",
+        14
+      ]
+    ],
+    "headings": [
+      {
+        "tag": "H1",
+        "family": "Pretendard",
+        "size": 56,
+        "weight": "700",
+        "lineHeight": "67.2px",
+        "color": "#ffffff"
+      },
+      {
+        "tag": "H2",
+        "family": "Pretendard",
+        "size": 36,
+        "weight": "700",
+        "lineHeight": "46.8px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 15,
+        "weight": "700",
+        "lineHeight": "21px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 15,
+        "weight": "700",
+        "lineHeight": "21px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 15,
+        "weight": "700",
+        "lineHeight": "21px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 15,
+        "weight": "700",
+        "lineHeight": "21px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H2",
+        "family": "Pretendard",
+        "size": 22,
+        "weight": "700",
+        "lineHeight": "33px",
+        "color": "#ffffff"
+      },
+      {
+        "tag": "H2",
+        "family": "Pretendard",
+        "size": 36,
+        "weight": "700",
+        "lineHeight": "46.8px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 18,
+        "weight": "700",
+        "lineHeight": "27px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 18,
+        "weight": "700",
+        "lineHeight": "27px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 18,
+        "weight": "700",
+        "lineHeight": "27px",
+        "color": "#121212"
+      },
+      {
+        "tag": "H3",
+        "family": "Pretendard",
+        "size": 18,
+        "weight": "700",
+        "lineHeight": "27px",
+        "color": "#121212"
+      }
+    ]
+  },
+  "spacingHistogramPx": [
+    [
+      "8",
+      235
+    ],
+    [
+      "16",
+      136
+    ],
+    [
+      "4",
+      97
+    ],
+    [
+      "24",
+      70
+    ],
+    [
+      "10",
+      68
+    ],
+    [
+      "12",
+      65
+    ],
+    [
+      "6",
+      57
+    ],
+    [
+      "32",
+      54
+    ],
+    [
+      "20",
+      38
+    ],
+    [
+      "14",
+      32
+    ],
+    [
+      "2",
+      31
+    ],
+    [
+      "3",
+      24
+    ],
+    [
+      "128",
+      18
+    ],
+    [
+      "40",
+      12
+    ],
+    [
+      "64",
+      8
+    ],
+    [
+      "28",
+      7
+    ]
+  ],
+  "radiiPx": [
+    [
+      "999",
+      68
+    ],
+    [
+      "12",
+      22
+    ],
+    [
+      "24",
+      21
+    ],
+    [
+      "16",
+      18
+    ],
+    [
+      "50",
+      12
+    ],
+    [
+      "8",
+      8
+    ]
+  ],
+  "shadows": [
+    [
+      "rgba(0, 0, 0, 0.06) 0px 2px 8px -2px",
+      13
+    ],
+    [
+      "rgba(0, 0, 0, 0.12) 0px 12px 40px -8px",
+      2
+    ],
+    [
+      "rgba(27, 91, 216, 0.4) 0px 4px 20px 0px",
+      1
+    ],
+    [
+      "rgba(0, 0, 0, 0.08) 0px 4px 24px -4px",
+      1
+    ]
+  ],
+  "note": "측정 후보. 토큰명·매핑은 에이전트가 브랜드 의도 반영해 확정한다(자동매핑 과신 금지)."
+}

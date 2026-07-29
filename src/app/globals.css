@@ -4,12 +4,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Pretendard Variable (원본 사이트 실측 폰트 = Pretendard) */
+@font-face {
+  font-family: "Pretendard Variable";
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2");
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-heading: var(--font-sans);
+  --font-sans: "Pretendard Variable", "Pretendard", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "Menlo", monospace;
+  --font-heading: "Pretendard Variable", "Pretendard", ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,14 +58,16 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  /* Brand: 태영목공 (site-template 기반) — 브랜드 색 = 딥블루 #1B5BD8 */
+  --background: #ffffff;
+  --foreground: #121212;
+  --card: #ffffff;
+  --card-foreground: #121212;
+  --popover: #ffffff;
+  --popover-foreground: #121212;
+  --primary: #1B5BD8;
+  --primary-foreground: #ffffff;
+  --polish-shadow-rgb: 27, 91, 216;  /* 브랜드 블루로 그림자 틴트 */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -235,4 +246,186 @@
   .reveal { opacity:1; transform:none; filter:none; transition:none; }
   .tg-lift:hover { transform:none; }
   .hero-ken, .hero-arrow, .hero-gradient-drift, .hero-parallax { animation: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Site-template gana-pro 계열 클래스 재현 (원본 클론 1:1 재현용)
+   원본 = ganaplumbing.revrun.kr, class prefix: .gph / .gpf / .gp-*
+   ───────────────────────────────────────────────────────────── */
+:root { --site-theme-color: #1B5BD8; }
+body.tmpl-gana-pro { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Header (.gph) */
+.gph { position: fixed; inset: 0 0 auto 0; z-index: 50; transition: background .25s ease, box-shadow .25s ease; }
+.gph--transparent { background: transparent; }
+.gph--solid { background: rgba(255,255,255,0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.06); backdrop-filter: blur(6px); }
+.gph__inner { max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.gph__logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.gph__logo-img { width: 36px; height: 36px; object-fit: contain; }
+.gph__logo-text { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.gph--solid .gph__logo-text { color: #121212; }
+.gph__nav { display: none; align-items: center; gap: 28px; }
+.gph__link { color: rgba(255,255,255,0.9); font-size: 15px; font-weight: 500; text-decoration: none; transition: color .2s; }
+.gph__link:hover { color: #93bbff; }
+.gph--solid .gph__link { color: #121212; }
+.gph--solid .gph__link:hover { color: var(--site-theme-color); }
+.gph__cta { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; background: var(--site-theme-color); color: #fff !important; font-size: 14px; font-weight: 700; border-radius: 999px; text-decoration: none; box-shadow: 0 4px 20px rgba(27,91,216,0.4); transition: transform .2s; }
+.gph__cta:hover { transform: translateY(-1px); }
+.gph__burger { background: transparent; border: 0; color: #fff; cursor: pointer; padding: 6px; }
+.gph--solid .gph__burger { color: #121212; }
+@media (min-width: 900px) {
+  .gph__nav { display: flex; }
+  .gph__burger { display: none; }
+}
+
+/* Mobile menu */
+.gph__mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 55; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.gph__mobile-overlay.gph__mobile-overlay--open { opacity: 1; pointer-events: auto; }
+.gph__mobile-menu { position: fixed; top: 0; right: 0; bottom: 0; width: min(84vw, 320px); background: #fff; z-index: 60; padding: 20px; transform: translateX(100%); transition: transform .28s ease; display: flex; flex-direction: column; gap: 8px; box-shadow: -12px 0 40px rgba(0,0,0,0.12); }
+.gph__mobile-menu.gph__mobile-menu--open { transform: translateX(0); }
+.gph__mobile-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #ebebeb; }
+.gph__mobile-close { background: transparent; border: 0; cursor: pointer; padding: 6px; color: #121212; }
+.gph__mobile-links { display: flex; flex-direction: column; gap: 0; margin-top: 10px; }
+.gph__mobile-link { padding: 14px 4px; color: #121212; font-size: 16px; font-weight: 600; text-decoration: none; border-bottom: 1px solid #f5f5f5; }
+.gph__mobile-cta { margin-top: 16px; }
+.gph__mobile-cta a { display: inline-flex; align-items: center; gap: 8px; width: 100%; justify-content: center; padding: 14px 20px; background: var(--site-theme-color); color: #fff; font-weight: 700; border-radius: 999px; text-decoration: none; box-shadow: 0 4px 20px rgba(27,91,216,0.4); }
+
+/* Hero (.gp-hero-*) */
+.gp-hero-content { max-width: 1200px; margin: 0 auto; padding: 0 24px; color: #fff; }
+.gp-hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22); border-radius: 999px; font-size: 13px; font-weight: 600; color: #fff; backdrop-filter: blur(6px); margin-bottom: 20px; }
+.gp-hero-pulse { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,0.6); animation: gp-pulse 1.6s infinite; }
+@keyframes gp-pulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+.gp-hero-h1 { font-size: clamp(38px, 6.8vw, 56px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: #fff; margin: 0; }
+.gp-hero-sub { margin-top: 20px; font-size: 17px; line-height: 1.6; color: rgba(255,255,255,0.9); }
+.gp-hero-badges { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+.gp-hero-badge-item { padding: 8px 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; font-size: 13px; font-weight: 600; color: #fff; }
+.gp-hero-ctas { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+.gp-hero-cta-primary { display: inline-flex; align-items: center; gap: 8px; padding: 16px 28px; background: var(--site-theme-color); color: #fff; font-size: 17px; font-weight: 800; border-radius: 999px; text-decoration: none; box-shadow: 0 12px 40px -8px rgba(27,91,216,0.6); transition: transform .2s; }
+.gp-hero-cta-primary:hover { transform: translateY(-2px); }
+.gp-hero-stats { margin-top: 40px; display: flex; gap: 32px; flex-wrap: wrap; }
+.gp-hero-stat-num { font-size: 30px; font-weight: 800; color: #93bbff; letter-spacing: -0.02em; }
+.gp-hero-stat-label { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+
+/* Trust bar */
+.gp-trust { background: rgba(0,0,0,0.9); padding: 20px 0; }
+.gp-trust-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 32px; }
+.gp-trust-item { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-size: 14px; font-weight: 500; }
+.gp-trust-check { width: 20px; height: 20px; border-radius: 50%; background: rgba(34,197,94,0.2); color: #22c55e; display: inline-flex; align-items: center; justify-content: center; }
+
+/* Generic section */
+.gp-section { padding: 96px 0; }
+.gp-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.gp-section-header { text-align: center; margin-bottom: 56px; }
+.gp-label { color: var(--site-theme-color); font-size: 13px; font-weight: 800; letter-spacing: 0.15em; margin: 0 0 12px; }
+.gp-h2 { font-size: clamp(28px, 4vw, 36px); font-weight: 800; color: #121212; letter-spacing: -0.02em; margin: 0; }
+.gp-sub { margin-top: 12px; font-size: 16px; color: #737373; }
+.gp-reveal { opacity: 1; }
+
+/* Cards */
+.gp-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: rgba(0,0,0,0.06) 0px 2px 8px -2px; transition: transform .3s, box-shadow .3s; }
+.gp-card:hover { transform: translateY(-4px); box-shadow: rgba(0,0,0,0.12) 0px 12px 40px -8px; }
+
+/* Calculator */
+.gp-calc { background: #f5f5f5; padding: 96px 0; }
+.gp-calc-panel { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 24px; padding: 40px; box-shadow: rgba(0,0,0,0.08) 0px 4px 24px -4px; }
+.gp-calc-step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--site-theme-color); color: #fff; font-size: 14px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; }
+.gp-calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 20px; }
+.gp-calc-chip { padding: 20px 12px; background: #f5f5f5; border: 2px solid transparent; border-radius: 12px; font-size: 14px; font-weight: 600; color: #121212; text-align: center; cursor: pointer; transition: all .2s; }
+.gp-calc-chip:hover { border-color: var(--site-theme-color); background: #fff; }
+
+/* Footer */
+.gpf { background: #1a1a1a; color: #fff; padding: 64px 0 0; }
+.gpf__inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
+.gpf__col--company { grid-column: span 1; }
+.gpf__col-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: #fff; }
+.gpf__desc { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 20px; }
+.gpf__info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 10px; }
+.gpf__link { display: block; padding: 6px 0; color: rgba(255,255,255,0.65); font-size: 14px; text-decoration: none; transition: color .2s; }
+.gpf__link:hover { color: #fff; }
+.gpf__biz-info { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.8; }
+.gpf__cert-btn { display: inline-flex; margin-top: 8px; padding: 6px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 6px; font-size: 12px; cursor: pointer; }
+.gpf__regions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.gpf__region-tag { padding: 4px 10px; background: rgba(255,255,255,0.08); border-radius: 999px; font-size: 12px; color: rgba(255,255,255,0.7); }
+.gpf__bottom { max-width: 1200px; margin: 40px auto 0; padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.gpf__copy { font-size: 12px; color: rgba(255,255,255,0.5); }
+.gpf__copy a { color: #93bbff; text-decoration: none; }
+.gpf__legal { display: flex; gap: 16px; }
+.gpf__legal a { font-size: 12px; color: rgba(255,255,255,0.5); text-decoration: none; }
+.gpf__legal a:hover { color: #fff; }
+
+/* Floating CTA (mobile) */
+.floating-cta { position: fixed; bottom: 20px; right: 20px; z-index: 40; }
+.floating-cta-primary { display: inline-flex; align-items: center; gap: 6px; padding: 14px 22px; background: var(--site-theme-color); color: #fff; font-size: 14px; font-weight: 800; border-radius: 999px; text-decoration: none; box-shadow: 0 8px 24px rgba(27,91,216,0.5); }
+
+/* Loading spinner used by placeholder loader */
+@keyframes rrn-spin { to { transform: rotate(360deg); } }
+
+/* ─────────────────────────────────────────────────────────────
+   prose — 블로그 본문 타이포그래피
+   정본: site-cloner/_base 계열 클론 globals.css (원류 = site-template Design Token Bridge).
+   자동 생성 HTML(h2/표/인용/목록)이 민무늬로 떨어지는 사고를 막는 최소 세트다.
+
+   ⚠️ 이 클론에는 @tailwindcss/typography 미설치 — Tailwind `prose-*` 유틸리티는 no-op.
+      반드시 이 CSS 를 쓴다. 셀렉터는 `.prose` 하위로만.
+   ⚠️ 이 클론에는 `--navy`·`--gold`·`--paper-*` 토큰이 없어 브랜드 남색(site-theme-color=#1B5BD8)과
+      플레인 그레이로 대체한다. 값을 바꾸면 시각 회귀가 나므로 별칭만 조정.
+   ───────────────────────────────────────────────────────────── */
+.prose {
+  --prose-accent: var(--site-theme-color, #1B5BD8);
+  --prose-line: #e5e7eb;
+  --prose-fill: #f3f4f6;
+
+  background: #ffffff;
+  color: #374151;
+  border-radius: 12px;
+}
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: #1a1a1a;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+.prose h1 { font-size: 2em; }
+.prose h2 { font-size: 1.5em; border-bottom: 1px solid var(--prose-line); padding-bottom: 0.3em; }
+.prose h3 { font-size: 1.25em; }
+.prose p { margin-bottom: 1.25em; line-height: 1.8; color: #374151; }
+.prose ul, .prose ol { margin-bottom: 1.25em; padding-left: 1.5em; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li { margin-bottom: 0.5em; line-height: 1.8; color: #374151; }
+.prose a { color: var(--prose-accent); text-decoration: underline; text-underline-offset: 3px; }
+.prose blockquote {
+  border-left: 3px solid var(--prose-accent);
+  padding-left: 1em;
+  margin: 1.5em 0;
+  color: #555;
+  font-style: normal;
+}
+.prose code { background: var(--prose-fill); padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; }
+.prose pre { background: #111; color: #e5e7eb; padding: 1em; border-radius: 6px; overflow-x: auto; margin-bottom: 1.25em; }
+.prose pre code { background: none; padding: 0; }
+.prose strong { color: #1a1a1a; font-weight: 700; }
+.prose table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+.prose thead th {
+  background: var(--prose-fill);
+  color: #111;
+  padding: 10px 14px;
+  font-weight: 700;
+  border: 1px solid var(--prose-line);
+  white-space: nowrap;
+  text-align: left;
+}
+.prose tbody td {
+  background: #ffffff;
+  color: #555;
+  padding: 10px 14px;
+  border: 1px solid var(--prose-line);
+}
+.prose tbody tr:nth-child(even) td { background: #f9fafb; }
+.prose img { width: 100%; height: auto; border-radius: 8px; margin: 28px 0; display: block; }
+.prose hr { border: 0; border-top: 1px solid var(--prose-line); margin: 2.5em 0; }
+
+@media (max-width: 768px) {
+  .prose table { display: block; overflow-x: auto; }
 }

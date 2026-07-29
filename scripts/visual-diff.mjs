@@ -44,7 +44,17 @@ async function shoot(page, url, file) {
   }
   await page.waitForTimeout(2000);
   await page.evaluate(`document.querySelectorAll('.hd_pops, [id^="hd_pops_"], [class*="popup"]').forEach(el => el.style.display = 'none');`);
-  await page.screenshot({ path: file, fullPage: true });
+  // ★ 하얀 스크린샷 봉합 (2026-07-29): lazy 이미지/스크롤 트리거된 섹션이 fullPage 캡처 전에 발화하도록
+  //   전체를 한 뷰포트씩 스크롤해 IntersectionObserver·lazy img를 강제로 발화. 그 뒤 안정화 대기.
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight) {
+      window.scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    window.scrollTo(0, 0);
+  });
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: file, fullPage: true, animations: "disabled" });
 }
 
 // 두 PNG를 좌(원본)|우(클론) 나란히 붙인 합성 이미지 — Playwright로 HTML 캡처(라이브러리 불필요)

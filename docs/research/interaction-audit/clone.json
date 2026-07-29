@@ -1,0 +1,942 @@
+{
+  "mobile": {
+    "elements": [
+      {
+        "tag": "a",
+        "label": "태영목공",
+        "href": "/",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "button",
+        "label": "메뉴 열기",
+        "href": null,
+        "isButton": true,
+        "hashOnly": false,
+        "reacted": true,
+        "validLink": false,
+        "mutations": 4,
+        "dead": false
+      },
+      {
+        "tag": "button",
+        "label": "메뉴 닫기",
+        "href": null,
+        "isButton": true,
+        "hashOnly": false,
+        "reacted": true,
+        "validLink": false,
+        "mutations": 4,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "서비스",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "작업과정",
+        "href": "/#process",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "시공사례",
+        "href": "/#cases",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "견적문의",
+        "href": "/calculator",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "블로그",
+        "href": "/blog",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "문의",
+        "href": "/contact",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "FAQ",
+        "href": "/#faq",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "서비스지역",
+        "href": "/#regions",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "010-8835-7775 전화상담",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "전화 상담 010-8835-7775",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "네이버 블로그 바로가기 →",
+        "href": "https://blog.naver.com/woodty",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "모든 팁 보기 →",
+        "href": "/blog",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "010-8835-7775",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "010-8835-7775",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "아파트 홈인테리어",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "가벽 시공",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "라인등·간접등",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "TV박스·아트월",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "히든도어 제작",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "일반 단열 시공",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "전체 서비스 →",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "시공사례",
+        "href": "/#cases",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "작업과정",
+        "href": "/#process",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "견적문의",
+        "href": "/#calculator",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "서비스 지역",
+        "href": "/#regions",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "시공백과",
+        "href": "/guide",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "블로그",
+        "href": "/blog",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "네이버 블로그 ↗",
+        "href": "https://blog.naver.com/woodty",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "상담문의",
+        "href": "/contact",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "FAQ",
+        "href": "/#faq",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "REVRUN",
+        "href": "https://revrun.kr",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "개인정보처리방침",
+        "href": "/privacy",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "이용약관",
+        "href": "/terms",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "태영목공에 전화 상담",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      }
+    ],
+    "nav": {
+      "visibleNavLinks": 10,
+      "toggleCount": 1,
+      "toggleLabel": "메뉴 열기",
+      "navAfterToggle": 10,
+      "toggleWorked": false,
+      "revealedOutsidePanel": 0
+    },
+    "fakeButtons": [
+      {
+        "tag": "div",
+        "txt": "바로가기"
+      }
+    ],
+    "jsErrors": []
+  },
+  "desktop": {
+    "elements": [
+      {
+        "tag": "a",
+        "label": "태영목공",
+        "href": "/",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "서비스",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "작업과정",
+        "href": "/#process",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "시공사례",
+        "href": "/#cases",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "견적문의",
+        "href": "/calculator",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "블로그",
+        "href": "/blog",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "문의",
+        "href": "/contact",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "FAQ",
+        "href": "/#faq",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "서비스지역",
+        "href": "/#regions",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "즉시상담",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "button",
+        "label": "메뉴 닫기",
+        "href": null,
+        "isButton": true,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "서비스",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "작업과정",
+        "href": "/#process",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "시공사례",
+        "href": "/#cases",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "견적문의",
+        "href": "/calculator",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "블로그",
+        "href": "/blog",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "문의",
+        "href": "/contact",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "FAQ",
+        "href": "/#faq",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "서비스지역",
+        "href": "/#regions",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "010-8835-7775 전화상담",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "전화 상담 010-8835-7775",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "네이버 블로그 바로가기 →",
+        "href": "https://blog.naver.com/woodty",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "모든 팁 보기 →",
+        "href": "/blog",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "010-8835-7775",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "010-8835-7775",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      },
+      {
+        "tag": "a",
+        "label": "아파트 홈인테리어",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "가벽 시공",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "라인등·간접등",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "TV박스·아트월",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "히든도어 제작",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "일반 단열 시공",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "전체 서비스 →",
+        "href": "/#services",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "시공사례",
+        "href": "/#cases",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "작업과정",
+        "href": "/#process",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "견적문의",
+        "href": "/#calculator",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "서비스 지역",
+        "href": "/#regions",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "시공백과",
+        "href": "/guide",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "블로그",
+        "href": "/blog",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "네이버 블로그 ↗",
+        "href": "https://blog.naver.com/woodty",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "상담문의",
+        "href": "/contact",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "FAQ",
+        "href": "/#faq",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "REVRUN",
+        "href": "https://revrun.kr",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "개인정보처리방침",
+        "href": "/privacy",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "이용약관",
+        "href": "/terms",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": true,
+        "mutations": 0,
+        "dead": false
+      },
+      {
+        "tag": "a",
+        "label": "태영목공에 전화 상담",
+        "href": "tel:01088357775",
+        "isButton": false,
+        "hashOnly": false,
+        "reacted": false,
+        "validLink": false,
+        "mutations": 0,
+        "dead": true
+      }
+    ],
+    "nav": {
+      "visibleNavLinks": 19,
+      "toggleCount": 0,
+      "toggleLabel": null,
+      "navAfterToggle": 19,
+      "toggleWorked": false,
+      "revealedOutsidePanel": 0
+    },
+    "fakeButtons": [
+      {
+        "tag": "div",
+        "txt": "바로가기"
+      }
+    ],
+    "jsErrors": []
+  }
+}

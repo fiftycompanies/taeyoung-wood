@@ -1,0 +1,307 @@
+{
+  "images": [
+    {
+      "src": "https://ganaplumbing.revrun.kr/images/gana/logo.png",
+      "alt": "가나설비",
+      "w": 703,
+      "h": 706
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-pipe-damage.jpg",
+      "alt": "홍대 건물 노후 배관 교체",
+      "w": 800,
+      "h": 566
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-manhole.jpg",
+      "alt": "서초동 빌딩 수직 배관 막힘 시공",
+      "w": 800,
+      "h": 566
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-endoscope.jpg",
+      "alt": "강남 하수구 막힘 토사 제거 및 통수",
+      "w": 800,
+      "h": 566
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-clog.jpg",
+      "alt": "영등포 하수구 막힘 통수 후 배관 수리",
+      "w": 800,
+      "h": 566
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/intake/20260423/photo_d9e0510b-27cc-4534-b3fe-800ee50a2944.jpg",
+      "alt": "변기막힘·탈거, 직접 해봤더니 이런 점이 중요하더라고요",
+      "w": 1440,
+      "h": 1920
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/intake/20260423/photo_d9e0510b-27cc-4534-b3fe-800ee50a2944.jpg",
+      "alt": "펌프교체 시기·비용·과정, 현장에서 직접 겪어보니 이런 게 핵심이더라고요",
+      "w": 1440,
+      "h": 1920
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/intake/20260423/photo_5bf9599a-5c32-44c4-9294-70c6d256500c.jpg",
+      "alt": "서울 누수 탐지, 직접 해봤더니 이런 점이 중요하더라고요",
+      "w": 1440,
+      "h": 1920
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/intake/20260423/photo_358f3931-7d89-4823-8d6a-7d5467f2325e.jpg",
+      "alt": "서울 배관공사, 현장에서 직접 겪어보니 이런 게 핵심이더라고요",
+      "w": 1440,
+      "h": 1920
+    },
+    {
+      "src": "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/business-cert.jpg",
+      "alt": "가나설비 사업자등록증",
+      "w": 703,
+      "h": 1012
+    }
+  ],
+  "bgImages": [
+    {
+      "tag": "DIV",
+      "cls": "",
+      "bg": "linear-gradient(rgba(18, 18, 18, 0.6), rgba(18, 18, 18, 0.5) 50%, rgba(18, 18, 18, 0.85))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-card",
+      "bg": "linear-gradient(135deg, rgba(245, 245, 245, 0.8), rgba(245, 245, 245, 0.4), rgb(255, 255, 255))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-bar",
+      "bg": "linear-gradient(90deg, rgba(27, 91, 216, 0.8), rgb(27, 91, 216), rgba(27, 91, 216, 0.8))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-icon",
+      "bg": "linear-gradient(135deg, rgba(27, 91, 216, 0.2), rgba(27, 91, 216, 0.1))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-card",
+      "bg": "linear-gradient(135deg, rgba(245, 245, 245, 0.8), rgba(245, 245, 245, 0.4), rgb(255, 255, 255))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-bar",
+      "bg": "linear-gradient(90deg, rgba(27, 91, 216, 0.8), rgb(27, 91, 216), rgba(27, 91, 216, 0.8))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-icon",
+      "bg": "linear-gradient(135deg, rgba(27, 91, 216, 0.2), rgba(27, 91, 216, 0.1))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-card",
+      "bg": "linear-gradient(135deg, rgba(245, 245, 245, 0.8), rgba(245, 245, 245, 0.4), rgb(255, 255, 255))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-bar",
+      "bg": "linear-gradient(90deg, rgba(27, 91, 216, 0.8), rgb(27, 91, 216), rgba(27, 91, 216, 0.8))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-icon",
+      "bg": "linear-gradient(135deg, rgba(27, 91, 216, 0.2), rgba(27, 91, 216, 0.1))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-card",
+      "bg": "linear-gradient(135deg, rgba(245, 245, 245, 0.8), rgba(245, 245, 245, 0.4), rgb(255, 255, 255))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-bar",
+      "bg": "linear-gradient(90deg, rgba(27, 91, 216, 0.8), rgb(27, 91, 216), rgba(27, 91, 216, 0.8))"
+    },
+    {
+      "tag": "DIV",
+      "cls": "gp-svc-icon",
+      "bg": "linear-gradient(135deg, rgba(27, 91, 216, 0.2), rgba(27, 91, 216, 0.1))"
+    }
+  ],
+  "favicons": [
+    {
+      "href": "https://ganaplumbing.revrun.kr/favicon.ico",
+      "sizes": ""
+    }
+  ],
+  "navLinks": [
+    {
+      "text": "가나설비",
+      "href": "https://ganaplumbing.revrun.kr/"
+    },
+    {
+      "text": "서비스",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "작업과정",
+      "href": "https://ganaplumbing.revrun.kr/#process"
+    },
+    {
+      "text": "시공사례",
+      "href": "https://ganaplumbing.revrun.kr/#cases"
+    },
+    {
+      "text": "시공계산기",
+      "href": "https://ganaplumbing.revrun.kr/calculator"
+    },
+    {
+      "text": "블로그",
+      "href": "https://ganaplumbing.revrun.kr/blog"
+    },
+    {
+      "text": "FAQ",
+      "href": "https://ganaplumbing.revrun.kr/#faq"
+    },
+    {
+      "text": "서비스지역",
+      "href": "https://ganaplumbing.revrun.kr/#regions"
+    },
+    {
+      "text": "즉시상담",
+      "href": "tel:05077244728"
+    },
+    {
+      "text": "홈",
+      "href": "https://ganaplumbing.revrun.kr/"
+    },
+    {
+      "text": "블로그",
+      "href": "https://ganaplumbing.revrun.kr/blog"
+    },
+    {
+      "text": "시공백과",
+      "href": "https://ganaplumbing.revrun.kr/guide"
+    }
+  ],
+  "footerLinks": [
+    {
+      "text": "050-7724-4728",
+      "href": "tel:05077244728"
+    },
+    {
+      "text": "하수구 청소",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "온수고압 세척",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "배관공사",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "누수 탐지",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "겨울철 해빙",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "펌프교체",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "전체 서비스 →",
+      "href": "https://ganaplumbing.revrun.kr/#services"
+    },
+    {
+      "text": "시공사례",
+      "href": "https://ganaplumbing.revrun.kr/#cases"
+    },
+    {
+      "text": "작업과정",
+      "href": "https://ganaplumbing.revrun.kr/#process"
+    },
+    {
+      "text": "비용 계산기",
+      "href": "https://ganaplumbing.revrun.kr/#calculator"
+    },
+    {
+      "text": "서비스 지역",
+      "href": "https://ganaplumbing.revrun.kr/#regions"
+    },
+    {
+      "text": "시공백과",
+      "href": "https://ganaplumbing.revrun.kr/guide"
+    },
+    {
+      "text": "블로그",
+      "href": "https://ganaplumbing.revrun.kr/blog"
+    },
+    {
+      "text": "FAQ",
+      "href": "https://ganaplumbing.revrun.kr/#faq"
+    },
+    {
+      "text": "REVRUN",
+      "href": "https://revrun.kr/"
+    },
+    {
+      "text": "개인정보처리방침",
+      "href": "https://ganaplumbing.revrun.kr/privacy"
+    },
+    {
+      "text": "이용약관",
+      "href": "https://ganaplumbing.revrun.kr/terms"
+    }
+  ],
+  "h1s": [
+    "하수구 청소못 뚫으면 0원"
+  ],
+  "h2s": [
+    "실시간 현장 사례",
+    "가나설비 공식 블로그",
+    "가나설비를 선택하는 이유",
+    "서비스 상세 안내",
+    "작업 진행 과정",
+    "서비스 가능 지역",
+    "예상 비용 계산기",
+    "전문가가 알려주는 시공 꿀팁",
+    "자주 묻는 질문",
+    "지금 바로 상담받으세요"
+  ],
+  "h3s": [
+    "홍대 건물 노후 배관 교체",
+    "서초동 빌딩 수직 배관 막힘 시공",
+    "강남 하수구 막힘 토사 제거 및 통수",
+    "영등포 하수구 막힘 통수 후 배관 수리",
+    "정확한 원인 진단",
+    "전문 장비 완비",
+    "투명한 견적",
+    "못 뚫으면 0원",
+    "1시간 내 출동",
+    "공공기관 신뢰",
+    "하수구 막힘 해결",
+    "배관 교체·공사",
+    "누수 탐지·보수",
+    "고압세척·정기관리",
+    "접수",
+    "방문",
+    "진단",
+    "시공",
+    "접수",
+    "방문",
+    "진단",
+    "시공",
+    "간편 견적 계산",
+    "변기막힘·탈거, 직접 해봤더니 이런 점이 중요하더라고요",
+    "펌프교체 시기·비용·과정, 현장에서 직접 겪어보니 이런 게 핵심이더라고요",
+    "서울 누수 탐지, 직접 해봤더니 이런 점이 중요하더라고요",
+    "서울 배관공사, 현장에서 직접 겪어보니 이런 게 핵심이더라고요"
+  ],
+  "bodyBg": "rgb(255, 255, 255)",
+  "bodyColor": "rgb(31, 41, 55)"
+}

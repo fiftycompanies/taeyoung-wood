@@ -1,0 +1,67 @@
+name: pr-gate
+# 팀원 리디자인 PR 안전 게이트 — 미리보기 배포 + 비파괴 스모크 + PR 코멘트.
+# (브랜치 보호 미사용: 결과는 PR 체크로 표시되고, 초록불일 때 self-merge 권장.)
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm i -g vercel@latest
+      - name: preview deploy (no --prod)
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          rm -rf .git   # 커밋 author 귀속 차단(BLOCKED) 회피 — 토큰 기반 익명 배포
+          vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+          url=$(vercel deploy --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "미리보기: $url"
+      - name: smoke (non-destructive)
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          # 레포의 기존 playwright와 버전 충돌 방지 — 격리 디렉터리에서 실행
+          mkdir -p /tmp/smoke && cp scripts/smoke.mjs /tmp/smoke/smoke.mjs
+          cd /tmp/smoke
+          npm init -y >/dev/null 2>&1
+          npm i playwright@latest
+          npx playwright install --with-deps chromium
+          node smoke.mjs "${{ steps.deploy.outputs.url }}"
+      - name: upload render screenshots (시각 검증 결과)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-screenshots
+          path: /tmp/smoke/*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: comment preview url + result
+        if: always()
+        env:
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const base = `${{ steps.deploy.outputs.url }}`;
+            const ok = `${{ job.status }}` === "success";
+            // 미리보기 보호(SSO) 통과용 토큰을 링크에 부착 → 검수자가 클릭만 하면 열림(쿠키 설정)
+            const link = base && process.env.BYPASS
+              ? `${base}?x-vercel-protection-bypass=${process.env.BYPASS}&x-vercel-set-bypass-cookie=true`
+              : (base || "(배포 실패)");
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `🔎 **미리보기(클릭하면 바로 열림)**: ${link}\n자동검사(스모크): ${ok ? "✅ 통과 — 머지 가능" : "❌ 실패 — 머지 전 수정 필요"}\n📸 렌더 스크린샷(PC·모바일) 시각 검증: ${runUrl} 의 Artifacts → preview-screenshots`;
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body });

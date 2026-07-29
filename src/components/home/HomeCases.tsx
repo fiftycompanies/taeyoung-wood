@@ -1,6 +1,6 @@
 // 실제 태영목공(전동현 대표) 시공 현장 사진 — 네이버 블로그(blog.naver.com/woodty)에서 제공한 자료.
 const CASES = [
-  { date: "최근 시공", title: "아파트 거실 철거 · 천장 목공 마감 준비", region: "수원시", tag: "목공 · 거실", img: "/images/case-4.jpg" },
+  { date: "최근 시공", title: "현장 실측 도면 작성 · 사전 계획", region: "수원시", tag: "실측 · 도면", img: "/images/plan.jpg" },
   { date: "최근 시공", title: "베란다 일반 단열재 시공 · 창가 마감", region: "성남시", tag: "단열 시공", img: "/images/case-2.jpg" },
   { date: "최근 시공", title: "아파트 단열 자재 반입 · 스티로폼 판넬", region: "용인시", tag: "단열 자재", img: "/images/case-1.jpg" },
   { date: "최근 시공", title: "매장 인테리어 · 아치 조명 · 마감", region: "서울", tag: "인테리어 마감", img: "/images/case-3.jpg" },

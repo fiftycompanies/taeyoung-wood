@@ -61,9 +61,8 @@ export const SERVICES = [
   { slug: "apartment", title: "아파트 홈인테리어", summary: "아파트 부분시공·목공+단열 원스톱" },
 ] as const;
 
-/** OG 대표 이미지 — 히어로 배경 재사용(외부 Supabase URL). */
-export const OG_IMAGE =
-  "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/intake/20260423/photo_358f3931-7d89-4823-8d6a-7d5467f2325e.jpg";
+/** OG 대표 이미지 — 히어로 배경 재사용(로컬 실제 시공 사진). */
+export const OG_IMAGE = "/images/hero.jpg";
 
 /** 정적 라우트 — sitemap·llms.txt 공용. 블로그는 sitemap 에서 동적 합성. */
 export const STATIC_ROUTES = [
@@ -90,8 +89,8 @@ export function localBusinessJsonLd() {
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     telephone: NAP.phone,
-    image: OG_IMAGE,
-    logo: OG_IMAGE,
+    image: `${SITE_URL}${OG_IMAGE}`,
+    logo: `${SITE_URL}${OG_IMAGE}`,
     priceRange: "₩₩",
     address: {
       "@type": "PostalAddress",

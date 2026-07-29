@@ -1,9 +1,9 @@
-// 참고: 아래 사진은 사이트 초기 개통용 자리표시 이미지입니다. 실제 태영목공 시공 사진은 순차적으로 교체 예정.
+// 실제 태영목공(전동현 대표) 시공 현장 사진 — 네이버 블로그(blog.naver.com/woodty)에서 제공한 자료.
 const CASES = [
-  { date: "준비 중", title: "아파트 거실 가벽 신설 · TV박스 마감 사례 (준비 중)", region: "수원시", tag: "목공 · 가벽", img: "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-pipe-damage.jpg" },
-  { date: "준비 중", title: "천장 라인등 · 간접등 목공 마감 사례 (준비 중)", region: "성남시", tag: "라인등·간접등", img: "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-clog.jpg" },
-  { date: "준비 중", title: "벽면 히든도어 제작 · 도색 사례 (준비 중)", region: "용인시", tag: "히든도어", img: "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-manhole.jpg" },
-  { date: "준비 중", title: "베란다 · 외벽 일반 단열 시공 사례 (준비 중)", region: "서울", tag: "단열 시공", img: "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/d68f3e67-df02-4444-9e63-23f3bdc53353/1776079059-case-endoscope.jpg" },
+  { date: "최근 시공", title: "아파트 거실 철거 · 천장 목공 마감 준비", region: "수원시", tag: "목공 · 거실", img: "/images/case-4.jpg" },
+  { date: "최근 시공", title: "베란다 일반 단열재 시공 · 창가 마감", region: "성남시", tag: "단열 시공", img: "/images/case-2.jpg" },
+  { date: "최근 시공", title: "아파트 단열 자재 반입 · 스티로폼 판넬", region: "용인시", tag: "단열 자재", img: "/images/case-1.jpg" },
+  { date: "최근 시공", title: "매장 인테리어 · 아치 조명 · 마감", region: "서울", tag: "인테리어 마감", img: "/images/case-3.jpg" },
 ];
 
 export function HomeCases() {

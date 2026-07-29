@@ -46,7 +46,6 @@ export function SiteHeader() {
       <header className={`gph ${solid ? "gph--solid" : "gph--transparent"}`}>
         <div className="gph__inner">
           <Link href="/" className="gph__logo">
-            <img src="/images/logo.svg" alt="태영목공" className="gph__logo-img" onError={(e) => (e.currentTarget.style.display = "none")} />
             <span className="gph__logo-text">태영목공</span>
           </Link>
           <nav className="gph__nav" aria-label="주 메뉴">

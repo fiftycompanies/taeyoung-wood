@@ -10,7 +10,8 @@ import { HomeWhyUs } from "@/components/home/HomeWhyUs";
 const PHONE_TEL = ["010", "8835", "7775"].join("");
 const PHONE_DISPLAY = ["010", "8835", "7775"].join("-");
 
-const HERO_BG = "https://bteilacnudezfwutirdm.supabase.co/storage/v1/object/public/site-images/intake/20260423/photo_358f3931-7d89-4823-8d6a-7d5467f2325e.jpg";
+// 아파트 거실 철거 후 현장 사진 — 실제 태영목공 시공 현장
+const HERO_BG = "/images/hero.jpg";
 
 function PhoneIcon({ size = 20 }: { size?: number }) {
   return (
@@ -65,21 +66,7 @@ export default function Home() {
                 <PhoneIcon /> {PHONE_DISPLAY} 상담문의
               </a>
             </div>
-            <div className="gp-hero-stats">
-              <div style={{ textAlign: "center" }}>
-                <div className="gp-hero-stat-num">20년</div>
-                <div className="gp-hero-stat-label">현장 경력</div>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div className="gp-hero-stat-num">50 / 50</div>
-                <div className="gp-hero-stat-label">목공·단열 비중</div>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div className="gp-hero-stat-num">부분시공</div>
-                <div className="gp-hero-stat-label">셀프 인테리어 특화</div>
-              </div>
-            </div>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 24 }}>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 32 }}>
               현장 사진 보내주시면 <strong>실측 견적</strong> 안내드립니다 · 바닥공사 제외
             </p>
           </div>

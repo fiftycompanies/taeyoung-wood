@@ -1,0 +1,74 @@
+name: deploy-clone-vercel
+# 클론(자체 Next 앱) 자동배포 — 우리 CI가 vercel CLI(토큰)로 명시 배포.
+# (Vercel git-connect와 무관: Vercel이 repo를 감시하지 않음. 우리가 언제/어떻게 배포할지 통제.)
+on:
+  push:
+    branches: [main]
+    paths-ignore: [".github/**", "**/*.md", ".vercel/**"]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'WIP:') }}
+    concurrency: deploy-clone
+    steps:
+      - uses: actions/checkout@v4
+      - name: normalize commit author (avoid Vercel build block)
+        # 다온(팀원) 등 비-Vercel-멤버가 작성자인 커밋은 Vercel 빌드가 차단됨(UNKNOWN 무한대기).
+        # 배포 직전 HEAD 작성자를 유효 팀계정으로 재스탬프(content 불변·push 안 함) → 누구 커밋이든 자동배포.
+        run: |
+          git config user.email "fiftycompanies@gmail.com"
+          git config user.name "fiftycompanies"
+          git commit --amend --reset-author --no-edit || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm i -g vercel@latest
+      - name: pull project settings
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: deploy (remote build, prod)
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN")
+          echo "deployed: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: notify notion (self-skips if no NOTION_PAGE trailer)
+        if: always()
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: |
+          if [ -f scripts/notify-notion.mjs ]; then node scripts/notify-notion.mjs --commit "${{ github.sha }}" || true; fi
+      - name: slack 배포 히스토리 알림
+        if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_DEPLOY }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          AUTHOR: ${{ github.event.head_commit.author.name }}
+          REPO: ${{ github.repository }}
+          STATUS: ${{ job.status }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -z "$SLACK_WEBHOOK" ] && { echo "no webhook secret"; exit 0; }
+          SITE="${REPO##*/}"
+          LIVE="${SITE}.revrun.kr"
+          TITLE=$(printf '%s' "${COMMIT_MSG:-(수동 실행)}" | head -1)
+          # 바뀐 내용: GitHub API로 변경 파일을 받아 비개발자용 한국어로 분류 요약(사진/블로그/문구/파비콘/추적)
+          CHANGED=""
+          FILES=$(gh api "repos/$REPO/commits/$GITHUB_SHA" --jq '[.files[].filename] | join("\n")' 2>/dev/null || true)
+          if [ -n "$FILES" ]; then
+            CHANGED=$(printf '%s' "$FILES" | jq -R -s -r 'def classify: ascii_downcase as $p | if ($p|test("favicon|apple-icon|icon-|/icon")) then "favicon" elif ($p|test("blog|/posts?/|/post")) then "blog" elif ($p|test("\\.(jpg|jpeg|png|webp|avif|gif|svg|ico)$")) then "image" elif ($p|test("gtm|gtag|analytics|googletag")) then "tracking" elif ($p|test("content\\.|\\.json$|\\.tsx?$|\\.mdx?$|\\.md$|\\.html?$|\\.css$")) then "content" else "other" end; def order: {image:1,blog:2,content:3,favicon:4,tracking:5,other:6}[.] // 9; split("\n")|map(select(length>0))|(map(classify)|group_by(.)|map({k:.[0],n:length})|sort_by(.k|order))|map(if .k=="favicon" then "파비콘(탭 아이콘) 변경" elif .k=="image" then "사진 \(.n)장 교체" elif .k=="blog" then "블로그 글 \(.n)건 변경" elif .k=="tracking" then "분석·추적 설정" elif .k=="content" then "문구·콘텐츠 수정" else "기타 변경 \(.n)건" end)|join(" · ")' 2>/dev/null || true)
+          fi
+          if [ -n "$CHANGED" ]; then CHANGED_LINE=$(printf '\n• 바뀐 내용: %s' "$CHANGED"); else CHANGED_LINE=""; fi
+          if [ "$STATUS" = "success" ]; then ICON="🚀"; STATE="완료"; RESULT="✅ 성공"; else ICON="❌"; STATE="실패"; RESULT="실패 — 확인/롤백 필요"; fi
+          TEXT=$(printf '%s [%s] 배포 %s%s\n• 커밋: %s\n• 작성자: %s · 결과: %s\n• https://%s' "$ICON" "$SITE" "$STATE" "$CHANGED_LINE" "$TITLE" "${AUTHOR:-?}" "$RESULT" "$LIVE")
+          jq -nc --arg t "$TEXT" '{text:$t}' | curl -s -X POST -H 'Content-type: application/json' -d @- "$SLACK_WEBHOOK" >/dev/null
+          echo "slack sent"

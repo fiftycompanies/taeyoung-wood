@@ -2,17 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import {
+  IconPartition, IconTvBox, IconLineLight, IconHiddenDoor, IconMolding,
+  IconWallInsul, IconCeilingInsul, IconVeranda, IconEtc,
+  IconPlanS, IconPlanM, IconPlanL,
+} from "./calc-icons";
 
 const SERVICES = [
-  { key: "partition", icon: "🧱", label: "가벽 시공" },
-  { key: "tvbox", icon: "📺", label: "TV박스·아트월" },
-  { key: "lineLight", icon: "💡", label: "라인등·간접등" },
-  { key: "hiddenDoor", icon: "🚪", label: "히든도어" },
-  { key: "molding", icon: "🪞", label: "몰딩·마감" },
-  { key: "wall", icon: "🧊", label: "벽체 단열" },
-  { key: "ceiling", icon: "☁️", label: "천장 단열" },
-  { key: "veranda", icon: "🪟", label: "베란다 결로 단열" },
-  { key: "etc", icon: "🛠", label: "기타 부분시공" },
+  { key: "partition", Icon: IconPartition, label: "가벽 시공" },
+  { key: "tvbox", Icon: IconTvBox, label: "TV박스·아트월" },
+  { key: "lineLight", Icon: IconLineLight, label: "라인등·간접등" },
+  { key: "hiddenDoor", Icon: IconHiddenDoor, label: "히든도어" },
+  { key: "molding", Icon: IconMolding, label: "몰딩·마감" },
+  { key: "wall", Icon: IconWallInsul, label: "벽체 단열" },
+  { key: "ceiling", Icon: IconCeilingInsul, label: "천장 단열" },
+  { key: "veranda", Icon: IconVeranda, label: "베란다 결로 단열" },
+  { key: "etc", Icon: IconEtc, label: "기타 부분시공" },
 ];
 
 const SEVERITY = [
@@ -22,9 +27,9 @@ const SEVERITY = [
 ];
 
 const BUILDINGS = [
-  { key: "apt_s", icon: "🏢", label: "아파트 24평 이하" },
-  { key: "apt_m", icon: "🏬", label: "아파트 25~40평" },
-  { key: "apt_l", icon: "🏛", label: "아파트 40평+ · 주택" },
+  { key: "apt_s", Icon: IconPlanS, label: "아파트 24평 이하" },
+  { key: "apt_m", Icon: IconPlanM, label: "아파트 25~40평" },
+  { key: "apt_l", Icon: IconPlanL, label: "아파트 40평+ · 주택" },
 ];
 
 // 아주 러프한 참고값 (반드시 현장 실측 후 확정 견적)
@@ -51,7 +56,7 @@ export function HomeCalculator() {
   return (
     <section id="calculator" className="gp-calc">
       <div className="gp-inner">
-        <div className="gp-reveal gp-section-header">
+        <div className="reveal gp-section-header">
           <p className="gp-label">COST CALCULATOR</p>
           <h2 className="gp-h2">예상 견적 참고 계산기</h2>
           <p className="gp-sub">시공 종류·범위·평형에 따른 참고 견적 범위입니다 (확정 견적은 실측 후)</p>
@@ -70,11 +75,13 @@ export function HomeCalculator() {
                   key={s.key}
                   type="button"
                   onClick={() => setSvc(s.key)}
-                  className="gp-calc-chip"
+                  className="gp-calc-chip ty-chip"
                   style={svc === s.key ? { borderColor: "#1B5BD8", background: "#eef4ff" } : undefined}
                   aria-pressed={svc === s.key}
                 >
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>{s.icon}</div>
+                  <span className="ty-chip__ico" data-on={svc === s.key || undefined}>
+                    <s.Icon size={22} />
+                  </span>
                   {s.label}
                 </button>
               ))}
@@ -114,11 +121,13 @@ export function HomeCalculator() {
                   key={b.key}
                   type="button"
                   onClick={() => setBld(b.key)}
-                  className="gp-calc-chip"
+                  className="gp-calc-chip ty-chip"
                   style={bld === b.key ? { borderColor: "#1B5BD8", background: "#eef4ff" } : undefined}
                   aria-pressed={bld === b.key}
                 >
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>{b.icon}</div>
+                  <span className="ty-chip__ico" data-on={bld === b.key || undefined}>
+                    <b.Icon size={22} />
+                  </span>
                   {b.label}
                 </button>
               ))}
@@ -129,7 +138,8 @@ export function HomeCalculator() {
             {result ? (
               <>
                 <div style={{ fontSize: 13, color: "#1B5BD8", fontWeight: 700 }}>참고 견적 범위</div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: "#121212", marginTop: 4 }}>{result}</div>
+                {/* key=result → 값이 바뀔 때마다 다시 튀어오른다 */}
+                <div key={result} className="ty-pop" style={{ fontSize: 28, fontWeight: 800, color: "#121212", marginTop: 4 }}>{result}</div>
                 <div style={{ fontSize: 12, color: "#737373", marginTop: 8 }}>자재·현장 조건에 따라 변동됩니다. 확정 견적은 실측 후 안내.</div>
               </>
             ) : (

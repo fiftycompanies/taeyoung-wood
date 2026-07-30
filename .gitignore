@@ -47,3 +47,7 @@ next-env.d.ts
 
 # Local temp files
 temp/
+
+# 블로그 원본 스크랩(108MB)·감사 스크린샷(24MB) — 로컬 작업물, 커밋 대상 아님
+docs/research/blog-scrape/
+audit-shots/

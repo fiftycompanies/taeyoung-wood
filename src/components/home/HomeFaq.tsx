@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
 const FAQS = [
   {
@@ -34,7 +34,7 @@ export function HomeFaq() {
   return (
     <section id="faq" className="gp-section" style={{ background: "#f5f5f5" }}>
       <div className="gp-inner">
-        <div className="gp-reveal gp-section-header">
+        <div className="reveal gp-section-header">
           <p className="gp-label">FAQ</p>
           <h2 className="gp-h2">자주 묻는 질문</h2>
           <p className="gp-sub">고객님들이 가장 궁금해하시는 질문들</p>
@@ -43,7 +43,7 @@ export function HomeFaq() {
           {FAQS.map((f, i) => {
             const open = openIdx === i;
             return (
-              <div key={f.q} className="reveal" style={{ background: "#fff", borderRadius: 12, overflow: "hidden", border: "1px solid #ebebeb" }}>
+              <div key={f.q} className="reveal" style={{ "--reveal-delay": `${i * 60}ms`, background: "#fff", borderRadius: 12, overflow: "hidden", border: "1px solid #ebebeb" } as CSSProperties}>
                 <button
                   type="button"
                   onClick={() => setOpenIdx(open ? null : i)}

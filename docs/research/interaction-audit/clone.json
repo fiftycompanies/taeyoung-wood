@@ -146,7 +146,7 @@
       },
       {
         "tag": "a",
-        "label": "네이버 블로그 바로가기 →",
+        "label": "네이버 블로그",
         "href": "https://blog.naver.com/woodty",
         "isButton": false,
         "hashOnly": false,
@@ -165,17 +165,6 @@
         "validLink": true,
         "mutations": 0,
         "dead": false
-      },
-      {
-        "tag": "a",
-        "label": "010-8835-7775",
-        "href": "tel:01088357775",
-        "isButton": false,
-        "hashOnly": false,
-        "reacted": false,
-        "validLink": false,
-        "mutations": 0,
-        "dead": true
       },
       {
         "tag": "a",
@@ -660,7 +649,7 @@
       },
       {
         "tag": "a",
-        "label": "네이버 블로그 바로가기 →",
+        "label": "네이버 블로그",
         "href": "https://blog.naver.com/woodty",
         "isButton": false,
         "hashOnly": false,
@@ -679,17 +668,6 @@
         "validLink": true,
         "mutations": 0,
         "dead": false
-      },
-      {
-        "tag": "a",
-        "label": "010-8835-7775",
-        "href": "tel:01088357775",
-        "isButton": false,
-        "hashOnly": false,
-        "reacted": false,
-        "validLink": false,
-        "mutations": 0,
-        "dead": true
       },
       {
         "tag": "a",

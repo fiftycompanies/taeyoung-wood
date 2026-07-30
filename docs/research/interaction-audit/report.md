@@ -1,8 +1,8 @@
-# Interaction Audit — http://localhost:3000/
+# Interaction Audit — http://localhost:3222
 
 ## 요약
 
-- 모바일 인터랙티브 요소: 37개
+- 모바일 인터랙티브 요소: 36개
 - 모바일 내비: 보이는 링크 10개 · 토글 1개 · 토글동작 ❌
 - 판정: P1 0 · P2 3 · P3 0
 

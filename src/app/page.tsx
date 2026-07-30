@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { HomeCases } from "@/components/home/HomeCases";
 import { HomeServices } from "@/components/home/HomeServices";
 import { HomeProcess } from "@/components/home/HomeProcess";
@@ -10,8 +11,14 @@ import { HomeWhyUs } from "@/components/home/HomeWhyUs";
 const PHONE_TEL = ["010", "8835", "7775"].join("");
 const PHONE_DISPLAY = ["010", "8835", "7775"].join("-");
 
-// 아파트 거실 철거 후 현장 사진 — 실제 태영목공 시공 현장
+// 판교 신축빌라 등박스 시공 완료 현장 — 실제 태영목공 시공 사진(네이버 블로그 woodty)
 const HERO_BG = "/images/hero.jpg";
+
+const KEYWORDS = [
+  "우물등박스", "간접등박스", "라인조명", "TV 반매립 가벽", "아트월", "히든도어", "포켓도어",
+  "간살 중문", "붙박이장", "커튼박스", "침대헤드", "에어컨 단내림", "확장부 단열", "아이소핑크",
+  "가벽·파티션", "9미리 문선", "웨인스코팅", "목계단", "신축빌라 내장목공", "목수 인력파견",
+];
 
 function PhoneIcon({ size = 20 }: { size?: number }) {
   return (
@@ -38,7 +45,7 @@ export default function Home() {
       {/* Hero */}
       <section style={{ position: "relative", minHeight: "100vh", overflow: "hidden", display: "flex", alignItems: "center", background: "#1a1a1a" }}>
         <div
-          className="hero-media hero-ken"
+          className="hero-media hero-ken hero-parallax"
           style={{ position: "absolute", inset: 0, backgroundImage: `url('${HERO_BG}')`, backgroundSize: "cover", backgroundPosition: "center" }}
           aria-hidden
         />
@@ -57,9 +64,9 @@ export default function Home() {
               20년 경력 전동현 대표가 직접, <strong>셀프 인테리어 고객</strong>에게 딱 맞는 부분시공
             </p>
             <div className="gp-hero-badges">
-              <span className="gp-hero-badge-item">가벽·라인등·TV박스·히든도어</span>
-              <span className="gp-hero-badge-item">일반 단열 시공</span>
-              <span className="gp-hero-badge-item">서울·경기 전역</span>
+              <span className="gp-hero-badge-item">등박스·라인조명·가벽·히든도어</span>
+              <span className="gp-hero-badge-item">확장부 아이소핑크 단열</span>
+              <span className="gp-hero-badge-item">수도권 전역 출장</span>
             </div>
             <div className="gp-hero-ctas">
               <a href={`tel:${PHONE_TEL}`} className="gp-hero-cta-primary" aria-label={`전화 상담 ${PHONE_DISPLAY}`}>
@@ -73,11 +80,27 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 시공 항목 키워드 마퀴 */}
+      <div className="ty-keyband" aria-hidden>
+        <div className="tg-marquee">
+          {[0, 1].map((dup) => (
+            <div key={dup} style={{ display: "flex" }}>
+              {KEYWORDS.map((k) => (
+                <span key={k} className="ty-keyband__item">
+                  <span className="ty-keyband__dot" />
+                  {k}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Trust bar */}
       <div className="gp-trust">
         <div className="gp-trust-inner">
-          {TRUST.map((t) => (
-            <div key={t} className="gp-trust-item">
+          {TRUST.map((t, i) => (
+            <div key={t} className="gp-trust-item reveal" style={{ "--reveal-delay": `${i * 70}ms` } as CSSProperties}>
               <span className="gp-trust-check"><CheckIcon /></span>
               {t}
             </div>
@@ -102,7 +125,7 @@ export default function Home() {
 function BlogCallout() {
   return (
     <section className="gp-section" style={{ background: "#f5f5f5" }}>
-      <div className="gp-inner" style={{ textAlign: "center" }}>
+      <div className="gp-inner reveal" style={{ textAlign: "center" }}>
         <h2 className="gp-h2">태영목공 네이버 블로그</h2>
         <p className="gp-sub">아파트 홈인테리어 시공 사례와 목공·단열 노하우를 확인하세요</p>
         <div style={{ marginTop: 24 }}>
@@ -123,7 +146,7 @@ function BlogCallout() {
 function FinalCta() {
   return (
     <section className="gp-cta-section" style={{ background: "linear-gradient(135deg, #1B5BD8, #0f3a99)", padding: "96px 0", color: "#fff", textAlign: "center" }}>
-      <div className="gp-inner">
+      <div className="gp-inner reveal">
         <h2 className="gp-h2" style={{ color: "#fff" }}>부분시공 상담 문의</h2>
         <p style={{ marginTop: 16, fontSize: 16, color: "rgba(255,255,255,0.85)" }}>대표가 직접 상담 · 실측 후 명확한 견적 안내</p>
         <div style={{ marginTop: 40 }}>

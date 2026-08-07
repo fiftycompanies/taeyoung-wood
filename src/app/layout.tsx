@@ -13,6 +13,7 @@ import {
   localBusinessJsonLd,
   websiteJsonLd,
 } from "@/lib/seo";
+import { CtaTracker } from "@/components/CtaTracker";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <noscript><style>{`.reveal{opacity:1!important;transform:none!important;filter:none!important}`}</style></noscript>
         <SiteHeader />
         <main style={{ flex: 1 }}>{children}</main>
+        <CtaTracker />
         <SiteFooter />
         <FloatingCta />
         <ScrollReveal />

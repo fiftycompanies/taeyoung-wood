@@ -1,8 +1,16 @@
 name: pr-gate
 # 팀원 리디자인 PR 안전 게이트 — 미리보기 배포 + 비파괴 스모크 + PR 코멘트.
 # (브랜치 보호 미사용: 결과는 PR 체크로 표시되고, 초록불일 때 self-merge 권장.)
+#
+# ★ pull_request 가 아니라 pull_request_target 인 이유 (2026-08-07)
+#   pull_request 는 "PR 안에 든 워크플로 파일"로 실행된다. 즉 PR 하나로 이 파일을 고쳐
+#   VERCEL_TOKEN(팀 전체 60+ 도메인 권한)을 밖으로 빼낼 수 있었다.
+#   pull_request_target 은 항상 main 의 이 파일로 돌기 때문에 PR 이 게이트를 못 바꾼다.
+#   대신 PR 코드를 자동 체크아웃하지 않으므로 아래에서 명시적으로 받아온다.
+#   - 토큰이 실린 스텝에서는 PR 코드를 '실행'하지 않는다(업로드 후 원격 빌드만).
+#   - 스모크 검사 스크립트도 main 정본을 쓴다 → PR 이 자기 검사를 무력화할 수 없다.
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
 
 permissions:
@@ -12,14 +20,25 @@ permissions:
 jobs:
   preview-and-smoke:
     runs-on: ubuntu-latest
+    # 포크에서 온 PR 은 아예 돌리지 않는다(같은 저장소 브랜치만).
+    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout base (검사 정본 — main)
+        uses: actions/checkout@v4
+        with:
+          path: base
+      - name: checkout PR head (미리보기 배포 대상)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
       - run: npm i -g vercel@latest
       - name: preview deploy (no --prod)
         id: deploy
+        working-directory: pr
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -33,14 +52,16 @@ jobs:
       - name: smoke (non-destructive)
         env:
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
         run: |
           # 레포의 기존 playwright와 버전 충돌 방지 — 격리 디렉터리에서 실행
-          mkdir -p /tmp/smoke && cp scripts/smoke.mjs /tmp/smoke/smoke.mjs
+          # ★ 스크립트는 base(main) 것을 쓴다. PR 이 검사를 약화시키지 못하게.
+          mkdir -p /tmp/smoke && cp base/scripts/smoke.mjs /tmp/smoke/smoke.mjs
           cd /tmp/smoke
           npm init -y >/dev/null 2>&1
           npm i playwright@latest
           npx playwright install --with-deps chromium
-          node smoke.mjs "${{ steps.deploy.outputs.url }}"
+          node smoke.mjs "$PREVIEW_URL"
       - name: upload render screenshots (시각 검증 결과)
         if: always()
         uses: actions/upload-artifact@v4
@@ -51,17 +72,19 @@ jobs:
           retention-days: 14
       - name: comment preview url + result
         if: always()
-        env:
-          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         uses: actions/github-script@v7
         with:
           script: |
-            const base = `${{ steps.deploy.outputs.url }}`;
+            // ★ 미리보기 보호 우회 토큰을 링크에 붙이지 않는다(2026-08-07).
+            //   댓글은 영구 보존 + 협력자에게 메일로 발송돼 회수가 불가능하다.
+            //   → 순수 URL 만 남기고, 로그인 없이 볼 수단은 아래 스크린샷 아티팩트로 제공.
+            const url = `${{ steps.deploy.outputs.url }}` || "(배포 실패)";
             const ok = `${{ job.status }}` === "success";
-            // 미리보기 보호(SSO) 통과용 토큰을 링크에 부착 → 검수자가 클릭만 하면 열림(쿠키 설정)
-            const link = base && process.env.BYPASS
-              ? `${base}?x-vercel-protection-bypass=${process.env.BYPASS}&x-vercel-set-bypass-cookie=true`
-              : (base || "(배포 실패)");
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = `🔎 **미리보기(클릭하면 바로 열림)**: ${link}\n자동검사(스모크): ${ok ? "✅ 통과 — 머지 가능" : "❌ 실패 — 머지 전 수정 필요"}\n📸 렌더 스크린샷(PC·모바일) 시각 검증: ${runUrl} 의 Artifacts → preview-screenshots`;
+            const body = [
+              `🔎 **미리보기**: ${url}`,
+              `(열리지 않으면 Vercel 로그인이 필요합니다 — 계정이 없으면 아래 스크린샷으로 검수해 주세요)`,
+              `자동검사(스모크): ${ok ? "✅ 통과 — 머지 가능" : "❌ 실패 — 머지 전 수정 필요"}`,
+              `📸 렌더 스크린샷(PC·모바일) 시각 검증: ${runUrl} 의 Artifacts → preview-screenshots`,
+            ].join("\n");
             await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body });

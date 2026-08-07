@@ -244,10 +244,50 @@ export async function getBlogPostBySlug(
   }
 }
 
-/** 모든 published 글의 slug 리스트 — `generateStaticParams` 용 */
+/**
+ * 모든 published 글의 slug — 사이트맵 · `generateStaticParams` 용. **상한 없음.**
+ *
+ * ★목록(listBlogPosts)의 `limit=50` 을 재사용하면 51편째부터 사이트맵에서 소리 없이 사라진다.
+ *   그래서 이 경로만 offset 페이지네이션으로 전량을 읽는다(목록의 50건은 UI 의도라 그대로 둔다).
+ * ★끊는 조건이 `rows.length < PAGE_SIZE` 이면 서버(PostgREST)의 max-rows 가 PAGE_SIZE 보다
+ *   작을 때 첫 페이지에서 조용히 잘린다. 그래서 **받은 건수만큼 offset 을 밀고 0건이 올 때까지** 돈다.
+ * ★order 에 id 를 넣어 동순위 정렬이 페이지마다 흔들려 글이 중복·누락되는 것을 막는다.
+ */
+const SLUG_PAGE_SIZE = 200;
+const SLUG_MAX_PAGES = 50; // 폭주 방지 — 최대 10,000편
+
 export async function getBlogSlugs(): Promise<{ slug: string; updated: string | null }[]> {
-  const posts = await listBlogPosts();
-  return posts.map((p) => ({ slug: p.slug, updated: p.published_at }));
+  if (!configured()) {
+    console.warn(`[blog] ${NO_CONFIG_REASON} 빈 slug 목록을 반환합니다.`);
+    return [];
+  }
+  const out: { slug: string; updated: string | null }[] = [];
+  const seen = new Set<string>();
+  try {
+    let offset = 0;
+    for (let page = 0; page < SLUG_MAX_PAGES; page++) {
+      const rows = await rest<{ slug: string; published_at: string | null }[]>(
+        `blog_posts?select=slug,published_at` +
+          `&site_id=eq.${SITE_ID}` +
+          `&status=eq.published` +
+          `&order=published_at.desc.nullslast,generated_at.desc,id.asc` +
+          `&limit=${SLUG_PAGE_SIZE}` +
+          `&offset=${offset}`,
+      );
+      if (rows.length === 0) break;
+      for (const r of rows) {
+        if (r.slug && !seen.has(r.slug)) {
+          seen.add(r.slug);
+          out.push({ slug: r.slug, updated: r.published_at });
+        }
+      }
+      offset += rows.length;
+    }
+  } catch (err) {
+    // 부분이라도 돌려준다 — 전부 버리면 사이트맵에서 블로그가 통째로 사라진다.
+    console.error("[blog] slugs failed", err);
+  }
+  return out;
 }
 
 /** content 가 인라인 스타일 HTML 이므로 안전하게 노출 전 정리 */

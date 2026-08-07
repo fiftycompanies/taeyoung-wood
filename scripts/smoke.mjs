@@ -6,11 +6,18 @@ const fails = [], warns = [];
 const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || "";
 // 미리보기 보호 우회 = 쿠키 방식. URL에 토큰 1회 부착 → Set-Cookie 로 authorize.
 // (헤더를 모든 요청에 붙이면 유튜브/폰트 등 외부요청에서 CORS 에러 유발하므로 쿠키 방식 사용)
-const GOTO = BYPASS
-  ? URL + (URL.includes("?") ? "&" : "?") + `x-vercel-protection-bypass=${BYPASS}&x-vercel-set-bypass-cookie=true`
-  : URL;
+// ★ 토큰은 /robots.txt 에서만 붙인다(2026-08-07). 홈에 붙이면 페이지 주소에 토큰이 남아
+//   GTM·GA 가 그 주소를 page_location/Referer 로 구글에 그대로 전송한다. robots.txt 는 스크립트가 없다.
+const bypassHop = BYPASS
+  ? URL.replace(/\/$/, "") + `/robots.txt?x-vercel-protection-bypass=${BYPASS}&x-vercel-set-bypass-cookie=true`
+  : null;
 const browser = await chromium.launch();
 const page = await browser.newContext({ viewport: { width: 1280, height: 900 } }).then(c => c.newPage());
+if (bypassHop) {
+  try { await page.goto(bypassHop, { waitUntil: "domcontentloaded", timeout: 30000 }); }
+  catch (e) { console.error("SMOKE FAIL: 미리보기 보호 우회 쿠키 발급 실패 " + e); await browser.close(); process.exit(1); }
+}
+const GOTO = URL;
 const jsErrors = [], resErrors = [];
 page.on("pageerror", e => jsErrors.push(String(e)));          // 진짜 JS 예외(=리디자인 깨짐) → 실패
 page.on("console", m => { if (m.type() === "error") resErrors.push(m.text()); }); // 리소스/네트워크 → 경고

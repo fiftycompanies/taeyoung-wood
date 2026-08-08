@@ -37,13 +37,20 @@ export async function POST(req: NextRequest) {
   const requested = Array.isArray(body.paths) && body.paths.length > 0 ? body.paths : ["/"];
   // 외부 URL·빈 문자열 차단
   const paths = requested.filter((p) => typeof p === "string" && p.startsWith("/") && p.length < 200);
-  for (const p of paths) revalidatePath(p, "page");
+  // ★리터럴 경로엔 type 을 붙이지 않는다(Next 16 문서: "literal path 면 type 을 생략").
+  //   붙이면 무효화 태그가 `_N_T_<path>/page` 가 되는데, 라우트 핸들러의 실제 태그는
+  //   `_N_T_/sitemap.xml/route` 라 /sitemap.xml purge 가 **조용히 아무 일도 안 했다**(라이브 실측).
+  for (const p of paths) {
+    if (p.includes("[")) revalidatePath(p, "page"); // 동적 세그먼트는 type 필수
+    else revalidatePath(p);
+  }
 
   const tags = (Array.isArray(body.tags) ? body.tags : []).filter(
     (t) => typeof t === "string" && t.length > 0 && t.length < 100
   );
-  // Next.js 16: revalidateTag(tag, profile) — profile 인자 필수
-  for (const t of tags) revalidateTag(t, "default");
+  // Next.js 16: 외부 호출자(어드민)가 즉시 반영을 원하면 `{ expire: 0 }` 이 정석(공식 문서).
+  //   "default" 프로파일은 stale 표시만 해서 다음 방문까지 옛 값이 나간다.
+  for (const t of tags) revalidateTag(t, { expire: 0 });
 
   return NextResponse.json({
     ok: true,

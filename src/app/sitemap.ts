@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL, STATIC_ROUTES } from "@/lib/seo";
 import { getBlogSlugs } from "@/lib/blog";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"; // 사이트맵은 요청 시 생성 — ISR 재생성이 라이브에서 안 돌아 옛 값이 굳었다(실측)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

@@ -9,6 +9,9 @@ name: main 워크플로 실패를 이슈로
 # ★취소(cancelled)는 알리지 않는다 — 동시 푸시로 취소되는 정상 사례가 많다(팀 전체 7일 14건 실측).
 on:
   workflow_run:
+    # ★`workflows:` 를 빼면 워크플로 파일 자체가 파싱되지 않는다(실측: 등록은 되지만 이름이 경로로 뜨고
+    #   푸시마다 실패 회차가 생긴다). 저장소별 이름 차이를 감싸는 상위집합으로 적는다.
+    workflows: ["deploy-clone-vercel", "deploy-prod", "CI"]
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -26,7 +29,7 @@ jobs:
   notify:
     # main 에 푸시해서 돌아간 워크플로가 실패한 경우만. (PR 게이트·수동 실행은 제외)
     if: >
-      inputs.simulate == 'true' || (
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.simulate == 'true') || (
         github.event_name == 'workflow_run' &&
         github.event.workflow_run.conclusion == 'failure' &&
         github.event.workflow_run.head_branch == 'main' &&
@@ -38,21 +41,21 @@ jobs:
       - name: 이슈로 알림
         env:
           GH_TOKEN: ${{ github.token }}
+          # ★체크아웃을 하지 않는 워크플로라 gh 가 저장소 문맥을 못 찾는다 → 모든 호출에 -R 을 준다
+          #   (실측: 없으면 "fatal: not a git repository" 로 스텝이 죽는다)
+          REPO: ${{ github.repository }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_DEPLOY }}
           WF_NAME: ${{ github.event.workflow_run.name }}
           WF_URL: ${{ github.event.workflow_run.html_url }}
           WF_TITLE: ${{ github.event.workflow_run.display_title }}
-          SIMULATE: ${{ inputs.simulate }}
+          SIMULATE: ${{ github.event.inputs.simulate }}
         run: |
           set -euo pipefail
           if [ "$SIMULATE" = "true" ]; then
             TITLE="⚠️ [테스트] 알림 경로 점검"
-            num=$(gh issue create --title "$TITLE" --body "감시 알림 경로 점검용입니다. 바로 닫습니다." --json number --jq .number 2>/dev/null || true)
-            if [ -z "$num" ]; then
-              url=$(gh issue create --title "$TITLE" --body "감시 알림 경로 점검용입니다. 바로 닫습니다.")
-              num="${url##*/}"
-            fi
-            gh issue close "$num" --comment "점검 완료 — 이슈로 알림이 만들어지는 경로가 살아 있습니다."
+            url=$(gh issue create -R "$REPO" --title "$TITLE" --body "감시 알림 경로 점검용입니다. 바로 닫습니다.")
+            num="${url##*/}"
+            gh issue close -R "$REPO" "$num" --comment "점검 완료 — 이슈로 알림이 만들어지는 경로가 살아 있습니다."
             echo "테스트 이슈 #$num 생성 후 닫음"; exit 0
           fi
           # 슬랙으로 이미 갔으면 중복 알림하지 않는다.
@@ -60,10 +63,10 @@ jobs:
           TITLE="⚠️ main 워크플로 실패: ${WF_NAME}"
           BODY=$(printf 'main 에 푸시해서 돌아간 **%s** 워크플로가 실패했습니다.\n\n• 커밋: %s\n• 실행 기록: %s\n\n이 저장소에는 슬랙 알림 열쇠가 없어 이슈로 알립니다.\n' \
             "$WF_NAME" "$WF_TITLE" "$WF_URL")
-          num=$(gh issue list --state open --search "$TITLE in:title" --json number,title \
+          num=$(gh issue list -R "$REPO" --state open --search "$TITLE in:title" --json number,title \
                  --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
           if [ -n "$num" ]; then
-            gh issue comment "$num" --body "$BODY"; echo "기존 이슈 #$num 에 덧붙였다"
+            gh issue comment -R "$REPO" "$num" --body "$BODY"; echo "기존 이슈 #$num 에 덧붙였다"
           else
-            gh issue create --title "$TITLE" --body "$BODY" >/dev/null; echo "이슈 생성"
+            gh issue create -R "$REPO" --title "$TITLE" --body "$BODY" >/dev/null; echo "이슈 생성"
           fi

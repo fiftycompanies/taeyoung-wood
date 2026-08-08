@@ -266,8 +266,8 @@ export async function getBlogSlugs(): Promise<{ slug: string; updated: string | 
   try {
     let offset = 0;
     for (let page = 0; page < SLUG_MAX_PAGES; page++) {
-      const rows = await rest<{ slug: string; published_at: string | null }[]>(
-        `blog_posts?select=slug,published_at` +
+      const rows = await rest<{ slug: string; published_at: string | null; sitemap_lastmod?: string | null }[]>(
+        `blog_posts?select=slug,published_at,sitemap_lastmod` +
           `&site_id=eq.${SITE_ID}` +
           `&status=eq.published` +
           `&order=published_at.desc.nullslast,generated_at.desc,id.asc` +
@@ -278,10 +278,16 @@ export async function getBlogSlugs(): Promise<{ slug: string; updated: string | 
       for (const r of rows) {
         if (r.slug && !seen.has(r.slug)) {
           seen.add(r.slug);
-          out.push({ slug: r.slug, updated: r.published_at });
+          out.push({ slug: r.slug, updated: r.sitemap_lastmod ?? r.published_at });
         }
       }
       offset += rows.length;
+      // ★상한에 닿아 끊기는 것을 침묵시키면 "51편째가 소리 없이 사라진다"를 1만편 자리에 다시 만든다.
+      if (page === SLUG_MAX_PAGES - 1 && rows.length === SLUG_PAGE_SIZE) {
+        console.error(
+          `[blog] slug 조회가 페이지 상한(${SLUG_MAX_PAGES}×${SLUG_PAGE_SIZE})에 닿아 잘렸다 — 사이트맵이 불완전하다`,
+        );
+      }
     }
   } catch (err) {
     // 부분이라도 돌려준다 — 전부 버리면 사이트맵에서 블로그가 통째로 사라진다.

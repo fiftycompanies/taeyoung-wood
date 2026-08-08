@@ -52,18 +52,25 @@ jobs:
         run: |
           set -uo pipefail
           [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_PROJECT_ID" ] || {
-            echo "verdict=skip" >> "$GITHUB_OUTPUT"; echo "Vercel 시크릿 없음 — 이 저장소는 대상 아님"; exit 0
+            # ★조용한 skip 은 "영원히 초록"이 된다(슬랙 열쇠 없던 15곳과 같은 부류의 구멍).
+            echo "verdict=unknown" >> "$GITHUB_OUTPUT"
+            echo "::warning::Vercel 시크릿이 없어 라이브 대조를 못 했다 — 이 저장소는 감시되지 않는다"
+            { echo "detail<<EOF_SKIP"; echo "VERCEL_TOKEN/VERCEL_PROJECT_ID 시크릿 없음"; echo "EOF_SKIP"; } >> "$GITHUB_OUTPUT"
+            exit 0
           }
           # ★깃허브 기본 셸은 bash -e 다. 종료코드를 보려면 `|| rc=$?` 로 받아야 한다.
           rc=0
           out=$(node .github/scripts/live-drift.mjs 2>&1) || rc=$?
           echo "$out"; echo "$out" >> "$GITHUB_STEP_SUMMARY"
+          # ★detail 을 **먼저**, 랜덤 구분자로 쓴다 — $out 에는 배포본에서 읽은 파일 경로가 실리므로
+          #   고정 EOF 였다면 감시 대상(배포한 사람)이 힙독을 조기 종료해 verdict 를 위조할 수 있다.
+          D="EOF_$(openssl rand -hex 8)"
+          { echo "detail<<$D"; printf '%s\n' "$out" | tr -d '\r' | head -20; echo "$D"; } >> "$GITHUB_OUTPUT"
           case $rc in
             0) echo "verdict=same" >> "$GITHUB_OUTPUT" ;;
             2) echo "verdict=drift" >> "$GITHUB_OUTPUT" ;;
             *) echo "verdict=unknown" >> "$GITHUB_OUTPUT" ;;
           esac
-          { echo "detail<<EOF"; printf '%s\n' "$out" | head -20; echo "EOF"; } >> "$GITHUB_OUTPUT"
 
       - name: 이슈로 알림(같은 제목이면 갱신)
         if: ${{ steps.drift.outputs.verdict == 'drift' && inputs.dry_run != 'true' }}
@@ -75,12 +82,13 @@ jobs:
           TITLE="⚠️ 라이브가 main 과 다릅니다"
           BODY=$(printf '라이브에 떠 있는 코드가 이 저장소 main 과 다릅니다.\n\n```\n%s\n```\n\n대부분 원인은 **푸시하지 않은 로컬 코드를 `vercel deploy --prod` 로 올린 것**입니다.\n바로잡는 방법: 그 작업물을 main 에 푸시하면 CI 가 다시 배포합니다.\n\n• 실행 기록: %s/%s/actions/runs/%s\n' \
             "$DETAIL" "${{ github.server_url }}" "${{ github.repository }}" "${{ github.run_id }}")
-          num=$(gh issue list --state open --search "$TITLE in:title" --json number,title \
-                 --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          # 검색 토크나이저(이모지·한글)에 기대지 않는다 — 목록을 받아 정확 일치만 고른다.
+          num=$(gh issue list -R "${{ github.repository }}" --state open --limit 100 --json number,title \
+                 | jq -r --arg t "$TITLE" '[.[] | select(.title == $t)][0].number // empty')
           if [ -n "$num" ]; then
-            gh issue comment "$num" --body "$BODY"; echo "기존 이슈 #$num 에 덧붙였다"
+            gh issue comment -R "${{ github.repository }}" "$num" --body "$BODY"; echo "기존 이슈 #$num 에 덧붙였다"
           else
-            gh issue create --title "$TITLE" --body "$BODY" >/dev/null; echo "이슈 생성"
+            gh issue create -R "${{ github.repository }}" --title "$TITLE" --body "$BODY" >/dev/null; echo "이슈 생성"
           fi
 
       - name: 확인 실패도 알린다
@@ -92,11 +100,16 @@ jobs:
           set -euo pipefail
           # 감시자가 죽은 것과 "이상 없음"을 구분하지 못하면 감시가 아니다.
           TITLE="⚠️ 라이브 대조를 확인하지 못했습니다"
-          num=$(gh issue list --state open --search "$TITLE in:title" --json number,title \
-                 --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          num=$(gh issue list -R "${{ github.repository }}" --state open --limit 100 --json number,title \
+                 | jq -r --arg t "$TITLE" '[.[] | select(.title == $t)][0].number // empty')
           BODY=$(printf '대조 자체가 실패했습니다(감시 공백).\n\n```\n%s\n```\n\n• %s/%s/actions/runs/%s\n' \
             "$DETAIL" "${{ github.server_url }}" "${{ github.repository }}" "${{ github.run_id }}")
-          [ -n "$num" ] && gh issue comment "$num" --body "$BODY" || gh issue create --title "$TITLE" --body "$BODY" >/dev/null
+          # ★`A && B || C` 는 B 가 실패하면 C 로 넘어가 이슈를 중복 생성한다 → if/else 로.
+          if [ -n "$num" ]; then
+            gh issue comment -R "${{ github.repository }}" "$num" --body "$BODY"
+          else
+            gh issue create -R "${{ github.repository }}" --title "$TITLE" --body "$BODY" >/dev/null
+          fi
 
       - name: 어긋남이 사라지면 이슈를 닫는다
         if: ${{ steps.drift.outputs.verdict == 'same' && inputs.dry_run != 'true' }}
@@ -105,9 +118,9 @@ jobs:
         run: |
           set -euo pipefail
           for TITLE in "⚠️ 라이브가 main 과 다릅니다" "⚠️ 라이브 대조를 확인하지 못했습니다"; do
-            num=$(gh issue list --state open --search "$TITLE in:title" --json number,title \
-                   --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
-            [ -n "$num" ] && gh issue close "$num" --comment "라이브가 main 과 같아졌습니다(자동 확인)." || true
+            num=$(gh issue list -R "${{ github.repository }}" --state open --limit 100 --json number,title \
+                   | jq -r --arg t "$TITLE" '[.[] | select(.title == $t)][0].number // empty')
+            [ -n "$num" ] && gh issue close -R "${{ github.repository }}" "$num" --comment "라이브가 main 과 같아졌습니다(자동 확인)." || true
           done
 
       - name: slack 통지(열쇠가 있는 저장소만)

@@ -11,7 +11,10 @@ on:
   workflow_run:
     # ★`workflows:` 를 빼면 워크플로 파일 자체가 파싱되지 않는다(실측: 등록은 되지만 이름이 경로로 뜨고
     #   푸시마다 실패 회차가 생긴다). 저장소별 이름 차이를 감싸는 상위집합으로 적는다.
-    workflows: ["deploy-clone-vercel", "deploy-prod", "CI"]
+    # ★`CI` 를 뺐다(2026-08-08 딥리뷰): 이 워크플로의 목적은 **배포 실패** 알림인데 ci.yml 이 상시
+    #   빨간 저장소가 있어(pohang-skyforest main 최근 5/5 실패 실측) 그 소음이 진짜 배포 실패를 묻는다.
+    #   대신 **감시자 자신의 잡 실패**를 넣었다 — drift 감시가 잡 단위로 죽으면 그 안의 fail-closed 가 못 덮는다.
+    workflows: ["deploy-clone-vercel", "deploy-prod", "라이브가 main 과 같은지 감시"]
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -23,7 +26,8 @@ permissions:
   contents: read
   issues: write
 
-concurrency: deploy-failure-issue-${{ github.event.workflow_run.id || github.run_id }}
+# ★고정 그룹 — 실행별 그룹이면 연속 실패 2건이 동시에 돌아 이슈를 2개 만든다(딥리뷰 지적).
+concurrency: deploy-failure-issue
 
 jobs:
   notify:
@@ -31,9 +35,9 @@ jobs:
     if: >
       (github.event_name == 'workflow_dispatch' && github.event.inputs.simulate == 'true') || (
         github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'failure' &&
         github.event.workflow_run.head_branch == 'main' &&
-        github.event.workflow_run.event == 'push'
+        github.event.workflow_run.event == 'push' &&
+        (github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'success')
       )
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -48,9 +52,17 @@ jobs:
           WF_NAME: ${{ github.event.workflow_run.name }}
           WF_URL: ${{ github.event.workflow_run.html_url }}
           WF_TITLE: ${{ github.event.workflow_run.display_title }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           SIMULATE: ${{ github.event.inputs.simulate }}
         run: |
           set -euo pipefail
+          # ★제목 매칭에 `gh --search` 를 쓰지 않는다 — 제목에 콜론·이모지가 있어 검색 토크나이저가
+          #   헛치면 실패마다 새 이슈가 쌓인다. 목록을 받아 jq --arg 로 정확 일치만 고른다
+          #   (jq 프로그램에 변수를 보간하면 따옴표 하나로 스텝이 죽어 알림이 소실된다).
+          find_issue() {
+            gh issue list -R "$REPO" --state open --limit 100 --json number,title \
+              | jq -r --arg t "$1" '[.[] | select(.title == $t)][0].number // empty'
+          }
           if [ "$SIMULATE" = "true" ]; then
             TITLE="⚠️ [테스트] 알림 경로 점검"
             url=$(gh issue create -R "$REPO" --title "$TITLE" --body "감시 알림 경로 점검용입니다. 바로 닫습니다.")
@@ -61,10 +73,27 @@ jobs:
           # 슬랙으로 이미 갔으면 중복 알림하지 않는다.
           if [ -n "$SLACK_WEBHOOK" ]; then echo "이 저장소는 슬랙으로 알린다 — 이슈 생략"; exit 0; fi
           TITLE="⚠️ main 워크플로 실패: ${WF_NAME}"
-          BODY=$(printf 'main 에 푸시해서 돌아간 **%s** 워크플로가 실패했습니다.\n\n• 커밋: %s\n• 실행 기록: %s\n\n이 저장소에는 슬랙 알림 열쇠가 없어 이슈로 알립니다.\n' \
+
+          # 성공 회차 → 열려 있던 실패 이슈를 닫는다(형제 감시자와 같은 대칭. 안 닫으면 첫 실패 이슈가
+          # 영구히 열린 채 이후 실패가 댓글로만 붙어 통지가 약해진다).
+          if [ "$CONCLUSION" = "success" ]; then
+            num=$(find_issue "$TITLE")
+            if [ -n "$num" ]; then
+              gh issue close -R "$REPO" "$num" --comment "이후 회차가 성공했습니다(자동 확인) — 닫습니다."
+              echo "복구 확인 — 이슈 #$num 닫음"
+            else
+              echo "성공 회차 · 열린 실패 이슈 없음"
+            fi
+            exit 0
+          fi
+
+          # 슬랙으로 이미 갔으면 중복 알림하지 않는다.
+          if [ -n "$SLACK_WEBHOOK" ]; then echo "이 저장소는 슬랙으로 알린다 — 이슈 생략"; exit 0; fi
+
+          # 커밋 제목은 사람이 쓴 문자열이라 코드펜스로 감싼다(링크·마크다운 주입 방지).
+          BODY=$(printf 'main 에 푸시해서 돌아간 **%s** 워크플로가 실패했습니다.\n\n```\n커밋: %s\n```\n\n• 실행 기록: %s\n\n이 저장소에는 슬랙 알림 열쇠가 없어 이슈로 알립니다. 다음 회차가 성공하면 자동으로 닫힙니다.\n' \
             "$WF_NAME" "$WF_TITLE" "$WF_URL")
-          num=$(gh issue list -R "$REPO" --state open --search "$TITLE in:title" --json number,title \
-                 --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          num=$(find_issue "$TITLE")
           if [ -n "$num" ]; then
             gh issue comment -R "$REPO" "$num" --body "$BODY"; echo "기존 이슈 #$num 에 덧붙였다"
           else

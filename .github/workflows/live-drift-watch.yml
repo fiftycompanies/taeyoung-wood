@@ -1,0 +1,124 @@
+name: 라이브가 main 과 같은지 감시
+# 「라이브에 떠 있는 코드가 저장소 main 과 다르다」를 잡는 층.
+#
+# 왜 필요한가(실측 사고 2026-08-07): 사이트맵 봉합을 main 에 넣고 CI 로 배포했는데,
+#   다른 사람이 **푸시하지 않은 로컬 코드**를 `vercel deploy --prod` 로 올려 덮었다.
+#   라이브가 88분간 옛 코드였고 **경보는 0건**이었다.
+#   중앙(revrun) 감시는 "누가 CI 밖에서 배포했나"를 보지만, **회사 계정으로 로컬 배포**하면 못 잡는다.
+#   그 사각을 메우는 게 이 워크플로다 — 라이브 배포본의 소스를 직접 받아 main 과 대조한다.
+#
+# ★새 열쇠를 만들지 않는다: 자기 저장소는 기본 GITHUB_TOKEN 으로 읽고, 알림은 이 저장소의
+#   깃허브 이슈로 남긴다(슬랙 열쇠가 없는 저장소가 25곳 중 15곳이라 이슈가 유일한 공통 경로다).
+#   슬랙 열쇠가 있으면 슬랙에도 보낸다.
+#
+# ★커밋 번호로는 판정 못 한다 — CI 가 배포 직전 커밋을 재서명(amend)해서 배포된 번호가 저장소에 없다.
+#   그래서 **파일 내용 해시**로 비교하고, 배포물에 소스가 없는(사전빌드) 경우엔 커밋 제목으로 물러선다.
+on:
+  schedule:
+    - cron: "35 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      simulate_drift:
+        description: "true 면 일부러 어긋난 것처럼 만들어 검출·알림 경로를 시험한다"
+        default: "false"
+      dry_run:
+        description: "true 면 이슈·슬랙을 만들지 않고 결과만 본다"
+        default: "false"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency: live-drift-watch
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 60 }
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+
+      - name: 라이브 배포본과 main 대조
+        id: drift
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          SIMULATE_DRIFT: ${{ inputs.simulate_drift }}
+        run: |
+          set -uo pipefail
+          [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_PROJECT_ID" ] || {
+            echo "verdict=skip" >> "$GITHUB_OUTPUT"; echo "Vercel 시크릿 없음 — 이 저장소는 대상 아님"; exit 0
+          }
+          # ★깃허브 기본 셸은 bash -e 다. 종료코드를 보려면 `|| rc=$?` 로 받아야 한다.
+          rc=0
+          out=$(node .github/scripts/live-drift.mjs 2>&1) || rc=$?
+          echo "$out"; echo "$out" >> "$GITHUB_STEP_SUMMARY"
+          case $rc in
+            0) echo "verdict=same" >> "$GITHUB_OUTPUT" ;;
+            2) echo "verdict=drift" >> "$GITHUB_OUTPUT" ;;
+            *) echo "verdict=unknown" >> "$GITHUB_OUTPUT" ;;
+          esac
+          { echo "detail<<EOF"; printf '%s\n' "$out" | head -20; echo "EOF"; } >> "$GITHUB_OUTPUT"
+
+      - name: 이슈로 알림(같은 제목이면 갱신)
+        if: ${{ steps.drift.outputs.verdict == 'drift' && inputs.dry_run != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DETAIL: ${{ steps.drift.outputs.detail }}
+        run: |
+          set -euo pipefail
+          TITLE="⚠️ 라이브가 main 과 다릅니다"
+          BODY=$(printf '라이브에 떠 있는 코드가 이 저장소 main 과 다릅니다.\n\n```\n%s\n```\n\n대부분 원인은 **푸시하지 않은 로컬 코드를 `vercel deploy --prod` 로 올린 것**입니다.\n바로잡는 방법: 그 작업물을 main 에 푸시하면 CI 가 다시 배포합니다.\n\n• 실행 기록: %s/%s/actions/runs/%s\n' \
+            "$DETAIL" "${{ github.server_url }}" "${{ github.repository }}" "${{ github.run_id }}")
+          num=$(gh issue list --state open --search "$TITLE in:title" --json number,title \
+                 --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --body "$BODY"; echo "기존 이슈 #$num 에 덧붙였다"
+          else
+            gh issue create --title "$TITLE" --body "$BODY" >/dev/null; echo "이슈 생성"
+          fi
+
+      - name: 확인 실패도 알린다
+        if: ${{ steps.drift.outputs.verdict == 'unknown' && inputs.dry_run != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DETAIL: ${{ steps.drift.outputs.detail }}
+        run: |
+          set -euo pipefail
+          # 감시자가 죽은 것과 "이상 없음"을 구분하지 못하면 감시가 아니다.
+          TITLE="⚠️ 라이브 대조를 확인하지 못했습니다"
+          num=$(gh issue list --state open --search "$TITLE in:title" --json number,title \
+                 --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+          BODY=$(printf '대조 자체가 실패했습니다(감시 공백).\n\n```\n%s\n```\n\n• %s/%s/actions/runs/%s\n' \
+            "$DETAIL" "${{ github.server_url }}" "${{ github.repository }}" "${{ github.run_id }}")
+          [ -n "$num" ] && gh issue comment "$num" --body "$BODY" || gh issue create --title "$TITLE" --body "$BODY" >/dev/null
+
+      - name: 어긋남이 사라지면 이슈를 닫는다
+        if: ${{ steps.drift.outputs.verdict == 'same' && inputs.dry_run != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for TITLE in "⚠️ 라이브가 main 과 다릅니다" "⚠️ 라이브 대조를 확인하지 못했습니다"; do
+            num=$(gh issue list --state open --search "$TITLE in:title" --json number,title \
+                   --jq "[.[] | select(.title==\"$TITLE\")][0].number // empty")
+            [ -n "$num" ] && gh issue close "$num" --comment "라이브가 main 과 같아졌습니다(자동 확인)." || true
+          done
+
+      - name: slack 통지(열쇠가 있는 저장소만)
+        if: ${{ steps.drift.outputs.verdict == 'drift' && inputs.dry_run != 'true' }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_DEPLOY }}
+          DETAIL: ${{ steps.drift.outputs.detail }}
+        run: |
+          set -euo pipefail
+          [ -n "$SLACK_WEBHOOK" ] || { echo "슬랙 열쇠 없음 — 이슈로만 알린다"; exit 0; }
+          TEXT=$(printf '⚠️ [%s] 라이브가 main 과 다릅니다\n%s\n• %s/%s/actions/runs/%s' \
+            "${{ github.repository }}" "$DETAIL" "${{ github.server_url }}" "${{ github.repository }}" "${{ github.run_id }}")
+          jq -nc --arg t "$TEXT" '{text:$t}' > body.json
+          curl -sS --fail-with-body -m 20 -X POST -H 'Content-type: application/json' -d @body.json "$SLACK_WEBHOOK" >/dev/null

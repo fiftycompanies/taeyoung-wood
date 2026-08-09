@@ -24,6 +24,18 @@ page.on("console", m => { if (m.type() === "error") resErrors.push(m.text()); })
 let resp;
 try { resp = await page.goto(GOTO, { waitUntil: "domcontentloaded", timeout: 45000 }); }
 catch (e) { console.error("SMOKE FAIL: 홈 로드 실패 " + e); await browser.close(); process.exit(1); }
+// ★도착한 곳이 검사 대상이 맞는지 먼저 본다.
+//   실사고: 우회 열쇠가 없는 저장소(33곳 중 19곳)에서 보호 화면으로 302 되고,
+//   그 로그인 페이지에 <form> 과 제목이 있어 **모든 단정이 통과**했다.
+//   `SMOKE PASS … (제목: Login – Vercel)` — 사이트를 한 글자도 안 보고 초록불이었다.
+{
+  const landed = new URL(page.url()).host, want = new URL(URL).host;
+  if (landed !== want) {
+    console.error(`SMOKE FAIL: ${want} 를 검사해야 하는데 ${landed} 로 튕겼다 ` +
+      `(미리보기 보호 우회 실패 — VERCEL_AUTOMATION_BYPASS_SECRET 미등록/만료 의심)`);
+    await browser.close(); process.exit(1);
+  }
+}
 try { await page.waitForLoadState("load", { timeout: 15000 }); } catch {}
 await page.waitForTimeout(1500);
 if (!resp || resp.status() >= 400) fails.push(`홈 응답 ${resp && resp.status()}`);

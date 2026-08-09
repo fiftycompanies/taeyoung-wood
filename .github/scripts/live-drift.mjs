@@ -20,7 +20,11 @@ const TOKEN = process.env.VERCEL_TOKEN;
 const TEAM = process.env.VERCEL_TEAM_ID;
 const PROJECT = process.env.VERCEL_PROJECT_ID;
 const SIMULATE = process.env.SIMULATE_DRIFT === "true";
-const SKIP_DIRS = ["/node_modules/", "/.next/", "/.vercel/", "/out/", "/.git/"];
+// ★".github/" 를 빼는 이유: deploy.yml 이 `paths-ignore: [".github/**"]` 이라
+//   CI 설정만 바뀌면 배포가 안 돈다 → 라이브에 옛 사본이 남는 게 **정상**이다.
+//   이걸 어긋남으로 부르면 감시기가 늑대를 부른다(2026-08-09 실측: 25곳 중 18곳 오탐, 이슈 19건).
+//   CI 설정은 배포물에 실려도 서비스 동작에 아무 영향이 없다.
+const SKIP_DIRS = ["/node_modules/", "/.next/", "/.vercel/", "/out/", "/.git/", "/.github/"];
 
 if (!TOKEN || !PROJECT) {
   console.error("VERCEL_TOKEN / VERCEL_PROJECT_ID 가 없다.");

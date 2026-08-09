@@ -125,7 +125,12 @@ const VISIBLE = (over: Partial<BlogVisibility> & { reason: string }): BlogVisibi
 });
 
 /** null = 하드 제거(404). 그 외 = 200 으로 열되 robots/배너를 visibility 로 지시. */
-function computeVisibility(row: BlogPostRaw): BlogVisibility | null {
+/** 사이트맵 경로는 본문을 싣지 않으므로 content 없이도 판정할 수 있어야 한다(정본과 같은 설계). */
+type VisibilityInput = Pick<BlogPostRaw, "status" | "audit_status" | "archive_reason" | "quality_score"> & {
+  content?: string | null;
+};
+
+function computeVisibility(row: VisibilityInput): BlogVisibility | null {
   const status = row.status ?? "published";
   const audit = row.audit_status;
 
@@ -172,9 +177,12 @@ function computeVisibility(row: BlogPostRaw): BlogVisibility | null {
 
   //   (7) Soft 404 — 본문이 너무 짧거나 미완성 표시가 많다.
   //       content 가 없으면(목록·사이트맵 경로) 길이를 모르므로 판정하지 않는다.
-  if (typeof row.content === "string") {
-    const len = row.content.length;
-    const placeholders = (row.content.match(PLACEHOLDER_RE) || []).length;
+  //   ★`!== undefined` 로 판정한다(정본과 동일) — `typeof === "string"` 이면 content 가 null 인 글이
+  //     검사를 건너뛰어 **빈 본문이 색인 허용**으로 새어 나간다. 사이트맵 경로는 본문을 안 실으므로
+  //     undefined 로 들어와 여기서 자연히 스킵된다(정본과 같은 설계).
+  if (row.content !== undefined) {
+    const len = (row.content || "").length;
+    const placeholders = ((row.content || "").match(PLACEHOLDER_RE) || []).length;
     if (len < SOFT_404_MIN_CONTENT || placeholders >= SOFT_404_PLACEHOLDER_MIN) {
       return VISIBLE({ reason: "soft_404" });
     }
@@ -299,6 +307,11 @@ export async function getBlogPostBySlug(
 const SLUG_PAGE_SIZE = 200;
 const SLUG_MAX_PAGES = 50; // 폭주 방지 — 최대 10,000편
 
+/** 사이트맵용 조회 행 — 본문은 싣지 않는다(정본도 사이트맵에서 soft404 를 판정하지 않는다). */
+type SlugRow = Pick<BlogPostRaw, "slug" | "published_at" | "status" | "audit_status" | "quality_score"> & {
+  sitemap_lastmod?: string | null;
+};
+
 export async function getBlogSlugs(): Promise<{ slug: string; updated: string | null }[]> {
   if (!configured()) {
     console.warn(`[blog] ${NO_CONFIG_REASON} 빈 slug 목록을 반환합니다.`);
@@ -309,8 +322,12 @@ export async function getBlogSlugs(): Promise<{ slug: string; updated: string | 
   try {
     let offset = 0;
     for (let page = 0; page < SLUG_MAX_PAGES; page++) {
-      const rows = await rest<{ slug: string; published_at: string | null; sitemap_lastmod?: string | null }[]>(
-        `blog_posts?select=slug,published_at,sitemap_lastmod` +
+      const rows = await rest<SlugRow[]>(
+        // ★사이트맵도 상세 페이지와 **같은 판정기**를 통과한 글만 싣는다(2026-08-09).
+        //   품질 게이트를 상세에만 붙였던 동안 사이트맵은 저품질 글까지 제출하고 페이지는 noindex 라
+        //   서치콘솔에 "제출된 URL 이 noindex" 경고가 쌓였다(papershred 라이브 실측: 표본 6편 중 3편).
+        //   본문(content)은 일부러 안 싣는다 — 정본도 사이트맵에서는 soft404 를 판정하지 않는다.
+        `blog_posts?select=slug,published_at,sitemap_lastmod,status,audit_status,quality_score` +
           `&site_id=eq.${SITE_ID}` +
           `&status=eq.published` +
           `&order=published_at.desc.nullslast,generated_at.desc,id.asc` +
@@ -321,6 +338,7 @@ export async function getBlogSlugs(): Promise<{ slug: string; updated: string | 
       for (const r of rows) {
         if (r.slug && !seen.has(r.slug)) {
           seen.add(r.slug);
+          if (!computeVisibility(r)?.index) continue; // 색인 불가 글은 사이트맵에서 제외
           out.push({ slug: r.slug, updated: r.sitemap_lastmod ?? r.published_at });
         }
       }

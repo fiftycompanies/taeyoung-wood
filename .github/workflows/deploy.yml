@@ -41,6 +41,33 @@ jobs:
           url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN")
           echo "deployed: $url"
           echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: 배포 직후 라이브 대조 (이미 도는 잡이라 추가 과금 0)
+        # ★왜 여기인가: 깃허브는 잡마다 1분으로 올려 과금한다. 별도 워크플로로 달면
+        #   배포 1회마다 1분이 새로 붙지만(실측 25곳 월 444회), 이 잡 안에서는 2초라 0원이다.
+        # ★왜 필요한가: 감시크론을 하루 1회로 줄이면 "배포는 성공했는데 라이브 별칭이
+        #   안 옮겨간" 사고가 최대 하루 안 보인다. 그 구멍만 여기서 막는다.
+        # ★조용한 skip 은 "영원히 초록"이 된다 — 못 쟀으면 warning 으로 남긴다.
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -uo pipefail
+          [ -f .github/scripts/live-drift.mjs ] || { echo "::warning::대조 스크립트가 없어 이 배포는 확인 못 했다"; exit 0; }
+          [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_PROJECT_ID" ] || { echo "::warning::Vercel 시크릿이 없어 이 배포는 확인 못 했다"; exit 0; }
+          # 별칭이 새 배포로 옮겨가는 데 몇 초 걸린다 → 어긋남이면 재시도(전파 지연 오탐 방지)
+          rc=0; out=""
+          for i in 1 2 3; do
+            rc=0; out=$(node .github/scripts/live-drift.mjs 2>&1) || rc=$?
+            [ $rc -eq 0 ] && break
+            [ $i -lt 3 ] && sleep 10
+          done
+          echo "$out"; echo "$out" >> "$GITHUB_STEP_SUMMARY"
+          case $rc in
+            0) echo "판정: 라이브 = main" ;;
+            2) echo "::error::배포는 됐는데 라이브가 main 과 다르다 — 별칭이 안 옮겨갔을 수 있다"; exit 1 ;;
+            *) echo "::warning::라이브 대조 불가(감시 공백) — 하루 1회 감시크론이 다시 잰다" ;;
+          esac
       - name: notify notion (self-skips if no NOTION_PAGE trailer)
         if: always()
         env:

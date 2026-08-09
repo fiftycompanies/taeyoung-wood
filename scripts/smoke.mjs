@@ -29,7 +29,9 @@ catch (e) { console.error("SMOKE FAIL: 홈 로드 실패 " + e); await browser.c
 //   그 로그인 페이지에 <form> 과 제목이 있어 **모든 단정이 통과**했다.
 //   `SMOKE PASS … (제목: Login – Vercel)` — 사이트를 한 글자도 안 보고 초록불이었다.
 {
-  const landed = new URL(page.url()).host, want = new URL(URL).host;
+  // ★이 파일은 3행에서 인자를 `URL` 로 받아 **전역 URL 생성자를 가린다**.
+  //   그래서 `new URL(...)` 이 아니라 globalThis 로 명시해야 한다(내 실수 — 배포 검사에서 즉시 발각).
+  const landed = new globalThis.URL(page.url()).host, want = new globalThis.URL(URL).host;
   if (landed !== want) {
     console.error(`SMOKE FAIL: ${want} 를 검사해야 하는데 ${landed} 로 튕겼다 ` +
       `(미리보기 보호 우회 실패 — VERCEL_AUTOMATION_BYPASS_SECRET 미등록/만료 의심)`);

@@ -42,7 +42,10 @@ export type BlogPostRaw = {
   generated_at: string | null;
   status?: string | null;
   audit_status?: string | null;
-  quality_score?: { totalScore?: number } | null;
+  /** 왜 보관했나 — our_fault(사실오류) 는 본문을 주지 않는다. */
+  archive_reason?: string | null;
+  /** 환각 목록은 색인 차단 판정에 쓴다(2건 이상 = 사실 신뢰 불가) */
+  quality_score?: { totalScore?: number; hallucinations?: unknown[] } | null;
 };
 
 /** 노출 판정 결과 — 라우트가 robots 메타·보관 안내 배너를 결정하는 데 쓴다 */
@@ -101,11 +104,17 @@ function firstImageUrl(images: BlogImage[] | null): string | null {
 }
 
 // ── 노출 판정 (site-template post-visibility.ts 의 상태단계 포트) ──
-//   품질 게이트(환각·soft404·점수<75)는 클론에 미포팅 — 별건 후속 과제.
 const DRAFT_LIKE = new Set(["draft", "scheduled", "collected", "generating"]);
 const ARCHIVED_LIKE = new Set(["archived", "paused", "needs_review", "failed", "preview"]);
 const KNOWN_STATUS = new Set([...DRAFT_LIKE, ...ARCHIVED_LIKE, "published", "deleted"]);
 const VERYLOW_SCORE = 40;
+// 품질 게이트 상수 — 정본(site-template/src/lib/seo/post-visibility.ts)과 같은 값.
+// 임계는 env 로 조정 가능하되 클론에는 env 가 없으므로 기본 75 고정.
+const QUALITY_NOINDEX_THRESHOLD = 75;
+const HALLUCINATION_BLOCK_MIN = 2;
+const SOFT_404_MIN_CONTENT = 500;
+const SOFT_404_PLACEHOLDER_MIN = 3;
+const PLACEHOLDER_RE = /\[추후 보완\]|\[placeholder\]|\bTODO\b|\bFIXME\b|XXX:/gi;
 
 const VISIBLE = (over: Partial<BlogVisibility> & { reason: string }): BlogVisibility => ({
   index: false,
@@ -134,6 +143,9 @@ function computeVisibility(row: BlogPostRaw): BlogVisibility | null {
   // 은퇴 보관 → 200 + noindex,follow (사고로 강제 마킹된 것만 하드 제거)
   if (ARCHIVED_LIKE.has(status)) {
     if (audit === "archived") return null;
+    // ★사실오류로 내린 글(our_fault)은 본문을 주지 않는다 — noindex 는 읽기·인용을 막지 않는다.
+    //   2026-08-05 에 템플릿엔 들어갔는데 클론 일부에 빠져 있었다(2026-08-08 이식).
+    if (row.archive_reason === "our_fault") return null;
     const score = row.quality_score?.totalScore;
     const veryLow = typeof score === "number" && score < VERYLOW_SCORE;
     return VISIBLE({ follow: !veryLow, archived: true, reason: veryLow ? "archived+verylow" : "archived" });
@@ -143,6 +155,37 @@ function computeVisibility(row: BlogPostRaw): BlogVisibility | null {
   if (audit === "duplicate" || audit === "noindex" || audit === "archived") {
     return VISIBLE({ archived: true, reason: "audit_excluded" });
   }
+
+  // ── 품질 게이트 (2026-08-08 이식) ──────────────────────────────────
+  //   이 자리에 원래 "품질 게이트는 클론에 미포팅 — 별건 후속 과제" 라고 적혀 있었다.
+  //   그 사이 라이브에서 **21~40점짜리 글이 `index, follow` 로 나가고 있었고**
+  //   그중 일부는 구글이 실제로 색인했다(2026-08-08 실측: 클론 13곳 72편, 40점 미만 30편, 색인 19편).
+  //   템플릿 사이트는 같은 조건에서 noindex 인데 클론만 열려 있어, 같은 회사 사이트가
+  //   서로 다른 품질 기준으로 검색에 나가고 있었다.
+  //   정본: construction-factory/site-template/src/lib/seo/post-visibility.ts (규칙 6·7·8)
+
+  //   (6) 환각 2건 이상 — 사실이 틀린 글이므로 링크도 넘기지 않는다
+  const hallucinations = row.quality_score?.hallucinations;
+  if (Array.isArray(hallucinations) && hallucinations.length >= HALLUCINATION_BLOCK_MIN) {
+    return VISIBLE({ follow: false, reason: "hallucination_gate" });
+  }
+
+  //   (7) Soft 404 — 본문이 너무 짧거나 미완성 표시가 많다.
+  //       content 가 없으면(목록·사이트맵 경로) 길이를 모르므로 판정하지 않는다.
+  if (typeof row.content === "string") {
+    const len = row.content.length;
+    const placeholders = (row.content.match(PLACEHOLDER_RE) || []).length;
+    if (len < SOFT_404_MIN_CONTENT || placeholders >= SOFT_404_PLACEHOLDER_MIN) {
+      return VISIBLE({ reason: "soft_404" });
+    }
+  }
+
+  //   (8) 품질 점수 미달 — 색인만 막고 링크는 넘긴다(자산 보존)
+  const score = row.quality_score?.totalScore;
+  if (typeof score === "number" && score < QUALITY_NOINDEX_THRESHOLD) {
+    return VISIBLE({ reason: "low_quality" });
+  }
+
   return VISIBLE({ index: true, reason: "published" });
 }
 

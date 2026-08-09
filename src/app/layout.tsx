@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import "./globals.css";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { SiteHeader } from "@/components/site-header";
@@ -57,7 +57,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteFooter />
         <FloatingCta />
         <ScrollReveal />
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-YNQCYYYQ2S"} />
+        {/* GA4 — 공유 property(hostname 별 분리 수집). 측정ID 정본 = admin/src/lib/analytics-config.ts.
+            ★쿠키 범위를 자기 호스트로 고정 — 기본값(auto)은 `.revrun.kr` 에 심겨 다른 고객사 사이트와
+            방문자·세션이 섞인다(2026-08-09 GA4 실측: 52곳에서 방문자 35.9% 중복). */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID || "G-YNQCYYYQ2S"}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID || "G-YNQCYYYQ2S"}',{cookie_domain:location.hostname})`}
+        </Script>
       </body>
     </html>
   );

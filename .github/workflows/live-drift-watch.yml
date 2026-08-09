@@ -15,7 +15,7 @@ name: 라이브가 main 과 같은지 감시
 #   그래서 **파일 내용 해시**로 비교하고, 배포물에 소스가 없는(사전빌드) 경우엔 커밋 제목으로 물러선다.
 on:
   schedule:
-    - cron: "35 */6 * * *"
+    - cron: "35 6 * * *"
   workflow_dispatch:
     inputs:
       simulate_drift:

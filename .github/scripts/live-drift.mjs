@@ -317,19 +317,23 @@ async function main() {
   })
     .split("\n")
     .filter(Boolean);
-  // 추적 중이지만 **애초에 올라가지 않는** 파일(.vercelignore) 은 대조에서 뺀다.
-  const notUploaded = ignoredPaths(
-    trackedAll.filter((p) => !skipped(p)),
+  // ★무시 규칙 판정은 **배포본·저장소 양쪽에 한 번에, 같은 조건으로** 한다.
+  //   한쪽만 `--no-index` 로 물으면 어긋난다: git 은 `--no-index` 없이는 **추적 중인 파일을
+  //   아예 대답에서 뺀다**. 그래서 「.gitignore 에 적혀 있는데 커밋도 돼 있고 배포도 된」 파일이
+  //   저장소 쪽에선 빠지고 배포 쪽에선 안 걸려 **「main 에 없는 파일」로 둔갑**했다.
+  //   실측(2026-08-10): 그 한 줄 차이로 4곳이 오탐 — 그중 3곳의 파일은 38곳에 커밋된 소유확인 파일이었다.
+  const ignored = ignoredPaths(
+    [...new Set([...trackedAll, ...repoPaths.keys()])].filter((p) => !skipped(p)),
     { noIndex: true, cwd: ROOT },
   );
-  const tracked = new Set(trackedAll.filter((p) => !skipped(p) && !notUploaded.has(p)));
+  const tracked = new Set(trackedAll.filter((p) => !skipped(p) && !ignored.has(p)));
 
   const diff = [];
   const extra = [];
   let compared = 0;
   const untrackedDeployed = [];
   for (const [p, uid] of repoPaths) {
-    if (skipped(p)) continue;
+    if (skipped(p) || ignored.has(p)) continue;
     if (!tracked.has(p)) {
       untrackedDeployed.push(p);
       continue;
@@ -345,10 +349,10 @@ async function main() {
   }
 
   // ★배포됐는데 저장소에 없는 파일 = 「푸시 안 한 새 파일을 로컬에서 배포」의 지문.
-  //   빌드 산출물(.gitignore 대상)은 정상이므로 가려낸다. 예전에는 `src/` 로 시작하는 것만
-  //   경보로 쳐서 `public/` 사진·문구 추가가 통째로 새어 나갔다(monti 기준 public/ 125개).
-  const gitIgnored = ignoredPaths(untrackedDeployed, { cwd: ROOT });
-  extra.push(...untrackedDeployed.filter((p) => !gitIgnored.has(p)));
+  //   무시 규칙에 걸리는 것은 위에서 이미 걸러졌다(같은 잣대·같은 조건). 여기 남은 건 진짜다.
+  //   예전에는 `src/` 로 시작하는 것만 경보로 쳐서 `public/` 사진·문구 추가가 통째로
+  //   새어 나갔다(monti 기준 public/ 125개).
+  extra.push(...untrackedDeployed);
   if (SIM_MODE === "extra") extra.push("__simulated__/새파일.txt");
 
   // 배포본에 없는 저장소 파일(라이브가 옛 트리라 파일이 아직 없는 경우)
@@ -357,14 +361,13 @@ async function main() {
 
   console.log(
     `대조 ${compared}개 · 다름 ${diff.length}개 · 배포본에 없는 파일 ${missing.length}개 · ` +
-      `저장소에 없는 파일 ${extra.length}개 · 빌드 산출물(정상) ${gitIgnored.size}개 · ` +
-      `안 올리는 파일(.vercelignore 등) ${notUploaded.size}개`,
+      `저장소에 없는 파일 ${extra.length}개 · 무시 규칙 대상(정상) ${ignored.size}개`,
   );
   for (const d of diff.slice(0, 10)) console.log(`  ✗ ${d}`);
   for (const m of missing.slice(0, 10)) console.log(`  ✗ ${m} — 배포본에 없음`);
   for (const e of extra.slice(0, 10)) console.log(`  ✗ ${e} — 배포본에만 있음(main 에 없는 파일)`);
   // 조용한 절단 금지 — 잘렸으면 전체 개수를 밝힌다(위 요약 줄에 이미 있다).
-  if (gitIgnored.size) console.log(`  · 빌드 산출물(정보): ${[...gitIgnored].slice(0, 5).join(", ")}`);
+  if (ignored.size) console.log(`  · 무시 규칙 대상(정보): ${[...ignored].slice(0, 5).join(", ")}`);
 
   if (compared === 0) {
     console.error("대조한 파일이 0개 — 경로 가정이 틀렸을 수 있다(판정 불가)");

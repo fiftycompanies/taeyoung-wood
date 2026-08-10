@@ -14,6 +14,7 @@ jobs:
     concurrency: deploy-clone
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 60 }   # 사전빌드 폴백의 `git log -50` 이 커밋 1개만 보던 것
       - name: normalize commit author (avoid Vercel build block)
         # 다온(팀원) 등 비-Vercel-멤버가 작성자인 커밋은 Vercel 빌드가 차단됨(UNKNOWN 무한대기).
         # 배포 직전 HEAD 작성자를 유효 팀계정으로 재스탬프(content 불변·push 안 함) → 누구 커밋이든 자동배포.
@@ -42,11 +43,14 @@ jobs:
           echo "deployed: $url"
           echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: 배포 직후 라이브 대조 (이미 도는 잡이라 추가 과금 0)
-        # ★왜 여기인가: 깃허브는 잡마다 1분으로 올려 과금한다. 별도 워크플로로 달면
-        #   배포 1회마다 1분이 새로 붙지만(실측 25곳 월 444회), 이 잡 안에서는 2초라 0원이다.
-        # ★왜 필요한가: 감시크론을 하루 1회로 줄이면 "배포는 성공했는데 라이브 별칭이
-        #   안 옮겨간" 사고가 최대 하루 안 보인다. 그 구멍만 여기서 막는다.
-        # ★조용한 skip 은 "영원히 초록"이 된다 — 못 쟀으면 warning 으로 남긴다.
+        id: livedrift
+        timeout-minutes: 3
+        # ★왜 여기인가: 깃허브는 잡마다 1분 올림 과금이다. 별도 워크플로면 배포 1회마다 1분이
+        #   새로 붙지만, 이 잡 안에서는 1~2초라 사실상 0원이다(monti 실측: 잡 총 56초 유지).
+        # ★무엇을 막나: 「배포는 성공했는데 라이브가 main 과 다르다」. CI 를 안 거친 로컬 배포는
+        #   이 잡을 아예 안 돌리므로 **여기서 못 잡는다** — 그건 하루 1회 감시크론 몫이다.
+        # ★worst 를 쓰는 이유(2026-08-09 딥리뷰 P0): rc 는 마지막 시도 값만 남아,
+        #   1·2회차가 어긋남이어도 3회차가 조회실패면 경고로 강등돼 **어긋남이 묻혔다**.
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -55,17 +59,18 @@ jobs:
           set -uo pipefail
           [ -f .github/scripts/live-drift.mjs ] || { echo "::warning::대조 스크립트가 없어 이 배포는 확인 못 했다"; exit 0; }
           [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_PROJECT_ID" ] || { echo "::warning::Vercel 시크릿이 없어 이 배포는 확인 못 했다"; exit 0; }
-          # 별칭이 새 배포로 옮겨가는 데 몇 초 걸린다 → 어긋남이면 재시도(전파 지연 오탐 방지)
-          rc=0; out=""
+          worst=0; out=""
           for i in 1 2 3; do
             rc=0; out=$(node .github/scripts/live-drift.mjs 2>&1) || rc=$?
-            [ $rc -eq 0 ] && break
+            [ $rc -eq 0 ] && { worst=0; break; }
+            [ $rc -gt $worst ] && worst=$rc      # 2(어긋남) 이 1(판정불가) 을 이긴다
             [ $i -lt 3 ] && sleep 10
           done
-          echo "$out"; echo "$out" >> "$GITHUB_STEP_SUMMARY"
-          case $rc in
+          printf '%s\n' "$out"
+          { echo '```'; printf '%s\n' "$out" | tr -d '\r' | awk 'NR<=30'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          case $worst in
             0) echo "판정: 라이브 = main" ;;
-            2) echo "::error::배포는 됐는데 라이브가 main 과 다르다 — 별칭이 안 옮겨갔을 수 있다"; exit 1 ;;
+            2) echo "drift=1" >> "$GITHUB_OUTPUT"; echo "::error::배포는 됐는데 라이브가 main 과 다르다 — 롤백 말고 main 에 푸시할 것"; exit 1 ;;
             *) echo "::warning::라이브 대조 불가(감시 공백) — 하루 1회 감시크론이 다시 잰다" ;;
           esac
       - name: notify notion (self-skips if no NOTION_PAGE trailer)
@@ -82,6 +87,7 @@ jobs:
           AUTHOR: ${{ github.event.head_commit.author.name }}
           REPO: ${{ github.repository }}
           STATUS: ${{ job.status }}
+          DRIFT: ${{ steps.livedrift.outputs.drift }}
           GH_TOKEN: ${{ github.token }}
         run: |
           [ -z "$SLACK_WEBHOOK" ] && { echo "no webhook secret"; exit 0; }
@@ -95,7 +101,9 @@ jobs:
             CHANGED=$(printf '%s' "$FILES" | jq -R -s -r 'def classify: ascii_downcase as $p | if ($p|test("favicon|apple-icon|icon-|/icon")) then "favicon" elif ($p|test("blog|/posts?/|/post")) then "blog" elif ($p|test("\\.(jpg|jpeg|png|webp|avif|gif|svg|ico)$")) then "image" elif ($p|test("gtm|gtag|analytics|googletag")) then "tracking" elif ($p|test("content\\.|\\.json$|\\.tsx?$|\\.mdx?$|\\.md$|\\.html?$|\\.css$")) then "content" else "other" end; def order: {image:1,blog:2,content:3,favicon:4,tracking:5,other:6}[.] // 9; split("\n")|map(select(length>0))|(map(classify)|group_by(.)|map({k:.[0],n:length})|sort_by(.k|order))|map(if .k=="favicon" then "파비콘(탭 아이콘) 변경" elif .k=="image" then "사진 \(.n)장 교체" elif .k=="blog" then "블로그 글 \(.n)건 변경" elif .k=="tracking" then "분석·추적 설정" elif .k=="content" then "문구·콘텐츠 수정" else "기타 변경 \(.n)건" end)|join(" · ")' 2>/dev/null || true)
           fi
           if [ -n "$CHANGED" ]; then CHANGED_LINE=$(printf '\n• 바뀐 내용: %s' "$CHANGED"); else CHANGED_LINE=""; fi
-          if [ "$STATUS" = "success" ]; then ICON="🚀"; STATE="완료"; RESULT="✅ 성공"; else ICON="❌"; STATE="실패"; RESULT="실패 — 확인/롤백 필요"; fi
+          # ★드리프트는 "배포 실패"가 아니다 — 처방이 롤백이 아니라 main 푸시라 문구를 가른다.
+          if [ "${DRIFT:-}" = "1" ]; then ICON="⚠️"; STATE="완료(라이브 대조 불일치)"; RESULT="배포는 성공 — 라이브가 main 과 다름(롤백 말고 main 에 푸시)";
+          elif [ "$STATUS" = "success" ]; then ICON="🚀"; STATE="완료"; RESULT="✅ 성공"; else ICON="❌"; STATE="실패"; RESULT="실패 — 확인/롤백 필요"; fi
           TEXT=$(printf '%s [%s] 배포 %s%s\n• 커밋: %s\n• 작성자: %s · 결과: %s\n• https://%s' "$ICON" "$SITE" "$STATE" "$CHANGED_LINE" "$TITLE" "${AUTHOR:-?}" "$RESULT" "$LIVE")
           jq -nc --arg t "$TEXT" '{text:$t}' | curl -s -X POST -H 'Content-type: application/json' -d @- "$SLACK_WEBHOOK" >/dev/null
           echo "slack sent"

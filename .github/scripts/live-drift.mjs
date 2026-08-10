@@ -232,9 +232,31 @@ async function main() {
       // ★"가장 최근 프로덕션 배포"가 아니라 **지금 라이브 별칭이 가리키는 배포**를 대조해야 한다.
       //   최신 배포가 ERROR/BUILDING 이면 라이브는 그 앞의 배포를 계속 서빙하므로,
       //   최신만 보면 엉뚱한 대상과 비교해 오탐·미탐이 양쪽으로 난다.
+      // ★정본은 **별칭의 deploymentId** 다. `targets.production` 은 별칭고정(alias set) 계열에서
+      //   별칭과 갈린다 — 2026-08-10 중앙 대조 실측 4곳(standardcare·staystone·admin·haebit).
+      //   그 경우 `targets.production` 을 믿으면 **고객이 보지 않는 배포**와 대조하게 된다.
+      let liveId = null;
+      let via = "";
+      try {
+        const al = await api(`/v4/aliases?projectId=${PROJECT}&limit=100`);
+        const aliases = al?.aliases || [];
+        const custom = aliases.filter((a) => !String(a.alias).endsWith(".vercel.app"));
+        const pool = custom.length ? custom : aliases;
+        const live = pool.slice().sort((a, b) => String(a.alias).length - String(b.alias).length)[0];
+        if (live?.deploymentId) {
+          liveId = live.deploymentId;
+          via = `별칭 ${live.alias}`;
+        }
+      } catch (err) {
+        console.log(`::warning::별칭 조회 실패(${err.message}) — 프로젝트 프로덕션 포인터로 물러선다`);
+      }
       const proj = await api(`/v9/projects/${PROJECT}`);
-      const liveId = proj?.targets?.production?.id;
+      if (!liveId && proj?.targets?.production?.id) {
+        liveId = proj.targets.production.id;
+        via = "프로젝트 프로덕션 포인터";
+      }
       if (liveId) {
+        console.log(`대조 대상: ${via}`);
         dep = await api(`/v13/deployments/${liveId}`);
         dep.uid = dep.id || dep.uid;
       } else {

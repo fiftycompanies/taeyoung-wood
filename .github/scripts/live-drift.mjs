@@ -25,7 +25,15 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+
+/**
+ * 배포되는 트리가 저장소 루트가 아닐 때 쓴다(모노레포 안의 사이트).
+ * 예: revrun 저장소가 `services/db_mkt/aceko/` 를 배포한다 → DRIFT_ROOT 로 그 폴더를 준다.
+ * ★이 갈래가 없으면 그런 사이트는 「제 저장소가 아닌 낡은 사본」과 대조돼 영원히 어긋남이 뜬다.
+ */
+const ROOT = process.env.DRIFT_ROOT || ".";
 
 /** 구조적으로 저장소에 대응이 없는 경로 — 어떤 저장소든 대조 대상이 아니다. */
 export const STRUCTURAL_SKIP = ["/node_modules/", "/.next/", "/.vercel/", "/out/", "/.git/"];
@@ -117,8 +125,10 @@ export function makeSkip(ignoreGlobs) {
 }
 
 /** 이 저장소의 제외 목록 정본을 읽는다. 못 읽으면 그 사실을 함께 돌려준다(조용한 폴백 금지). */
-export function loadIgnoreGlobs(readFile = (p) => readFileSync(p, "utf8")) {
-  const path = ".github/workflows/deploy.yml";
+export function loadIgnoreGlobs(
+  readFile = (p) => readFileSync(p, "utf8"),
+  path = process.env.DRIFT_DEPLOY_WORKFLOW || ".github/workflows/deploy.yml",
+) {
   let text;
   try {
     text = readFile(path);
@@ -143,15 +153,24 @@ function* walk(tree, prefix = "") {
   }
 }
 
-/** 배포됐지만 추적되지 않는 파일 중 **.gitignore 로 무시되는 것**을 가려낸다(빌드 산출물 등). */
-function partitionIgnoredByGit(paths) {
-  if (paths.length === 0) return { gitIgnored: new Set(), notIgnored: paths };
+/**
+ * 무시 규칙에 걸리는 경로를 git 에게 물어 가려낸다.
+ *
+ * ★`.vercelignore` 를 **반드시** 함께 본다 — Vercel CLI 가 애초에 올리지 않는 목록이라,
+ *   여기 걸린 파일이 배포물에 없는 건 정상이다. 안 보면 그 저장소는 상시 오탐이 된다.
+ *   (2026-08-10 실측: 시범 6곳엔 없어서 「함대에 없다」고 단정했는데, 새로 감시를 켠 13곳 중
+ *    3곳에 있었다 — junggamlaw 21줄·ostop 5줄·egdmcamp-gateway 20줄. 표본이 모집단이 아니다.)
+ *
+ * ★규칙 문법은 gitignore 와 같으므로 직접 구현하지 않고 git 에게 판정시킨다
+ *   (`core.excludesFile`). 손으로 만든 글롭 해석기는 `.aider*`·`docs/` 같은 형태에서 어긋난다.
+ */
+export function ignoredPaths(paths, { noIndex = false, cwd } = {}) {
+  if (paths.length === 0) return new Set();
+  const args = ["-c", "core.excludesFile=.vercelignore", "check-ignore", "--stdin"];
+  if (noIndex) args.push("--no-index"); // 추적 중인 파일도 규칙에 걸리는지 보려면 필요하다
   let out = "";
   try {
-    out = execFileSync("git", ["check-ignore", "--stdin"], {
-      encoding: "utf8",
-      input: paths.join("\n"),
-    });
+    out = execFileSync("git", args, { encoding: "utf8", input: paths.join("\n"), cwd });
   } catch (err) {
     // 일치가 0건이면 git 이 종료코드 **1** 로 끝난다 — 실패가 아니다.
     // ★그 밖의 종료코드(예: .git 이 없어 128)를 같이 삼키면 빌드 산출물이 전부
@@ -159,8 +178,7 @@ function partitionIgnoredByGit(paths) {
     if (err.status !== 1) throw err;
     out = err.stdout ?? "";
   }
-  const gitIgnored = new Set(out.split("\n").filter(Boolean));
-  return { gitIgnored, notIgnored: paths.filter((p) => !gitIgnored.has(p)) };
+  return new Set(out.split("\n").filter(Boolean));
 }
 
 async function main() {
@@ -273,10 +291,16 @@ async function main() {
 
   const trackedAll = execFileSync("git", ["-c", "core.quotepath=off", "ls-files"], {
     encoding: "utf8",
+    cwd: ROOT,
   })
     .split("\n")
     .filter(Boolean);
-  const tracked = new Set(trackedAll.filter((p) => !skipped(p)));
+  // 추적 중이지만 **애초에 올라가지 않는** 파일(.vercelignore) 은 대조에서 뺀다.
+  const notUploaded = ignoredPaths(
+    trackedAll.filter((p) => !skipped(p)),
+    { noIndex: true, cwd: ROOT },
+  );
+  const tracked = new Set(trackedAll.filter((p) => !skipped(p) && !notUploaded.has(p)));
 
   const diff = [];
   const extra = [];
@@ -288,11 +312,11 @@ async function main() {
       untrackedDeployed.push(p);
       continue;
     }
-    if (!existsSync(p)) {
+    if (!existsSync(join(ROOT, p))) {
       diff.push(`${p} — 작업트리에 없음`);
       continue;
     }
-    let local = sha1(readFileSync(p));
+    let local = sha1(readFileSync(join(ROOT, p)));
     if (SIM_MODE === "content" && compared === 0) local = "0".repeat(40); // 검출·알림 경로 시험용
     compared++;
     if (local !== uid) diff.push(`${p} — 내용 다름`);
@@ -301,8 +325,8 @@ async function main() {
   // ★배포됐는데 저장소에 없는 파일 = 「푸시 안 한 새 파일을 로컬에서 배포」의 지문.
   //   빌드 산출물(.gitignore 대상)은 정상이므로 가려낸다. 예전에는 `src/` 로 시작하는 것만
   //   경보로 쳐서 `public/` 사진·문구 추가가 통째로 새어 나갔다(monti 기준 public/ 125개).
-  const { gitIgnored, notIgnored } = partitionIgnoredByGit(untrackedDeployed);
-  extra.push(...notIgnored);
+  const gitIgnored = ignoredPaths(untrackedDeployed, { cwd: ROOT });
+  extra.push(...untrackedDeployed.filter((p) => !gitIgnored.has(p)));
   if (SIM_MODE === "extra") extra.push("__simulated__/새파일.txt");
 
   // 배포본에 없는 저장소 파일(라이브가 옛 트리라 파일이 아직 없는 경우)
@@ -311,7 +335,8 @@ async function main() {
 
   console.log(
     `대조 ${compared}개 · 다름 ${diff.length}개 · 배포본에 없는 파일 ${missing.length}개 · ` +
-      `저장소에 없는 파일 ${extra.length}개 · 빌드 산출물(정상) ${gitIgnored.size}개`,
+      `저장소에 없는 파일 ${extra.length}개 · 빌드 산출물(정상) ${gitIgnored.size}개 · ` +
+      `안 올리는 파일(.vercelignore 등) ${notUploaded.size}개`,
   );
   for (const d of diff.slice(0, 10)) console.log(`  ✗ ${d}`);
   for (const m of missing.slice(0, 10)) console.log(`  ✗ ${m} — 배포본에 없음`);

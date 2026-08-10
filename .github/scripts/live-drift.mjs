@@ -25,6 +25,11 @@ const SIMULATE = process.env.SIMULATE_DRIFT === "true";
 //   이걸 어긋남으로 부르면 감시기가 늑대를 부른다(2026-08-09 실측: 25곳 중 18곳 오탐, 이슈 19건).
 //   CI 설정은 배포물에 실려도 서비스 동작에 아무 영향이 없다.
 const SKIP_DIRS = ["/node_modules/", "/.next/", "/.vercel/", "/out/", "/.git/", "/.github/"];
+// ★배포가 안 도는 경로는 라이브에 옛 사본이 남는 게 정상이다 — 그걸 어긋남이라 부르면 늑대를 부른다.
+//   deploy.yml 의 paths-ignore 가 정본: [".github/**", "**/*.md", ".vercel/**"].
+//   .md 를 빠뜨려 2026-08-09 봉합이 셋 중 하나만 막았다(딥리뷰 4개 렌즈 동시 지적).
+const SKIP_GLOBS = [/\.md$/i];
+const skipped = (p) => SKIP_DIRS.some((s) => `/${p}`.includes(s)) || SKIP_GLOBS.some((re) => re.test(p));
 
 if (!TOKEN || !PROJECT) {
   console.error("VERCEL_TOKEN / VERCEL_PROJECT_ID 가 없다.");
@@ -99,7 +104,7 @@ console.log(`라이브 배포: ${when} · ${who} · ${dep.readyState} · ${msg |
 let deployed;
 try {
   deployed = [...walk(await api(`/v6/deployments/${dep.uid}/files`))].filter(
-    ([p]) => !SKIP_DIRS.some((s) => `/${p}`.includes(s)),
+    ([p]) => !skipped(p),
   );
 } catch (err) {
   console.error(`배포 파일목록 조회 실패: ${err.message}`);

@@ -241,6 +241,16 @@ const SELECT_COLS_DETAIL = `${SELECT_COLS},status,audit_status,quality_score`;
  * 목록 — site_id + published 강제 필터 + 최신 50개.
  * 목록/사이트맵은 발행글만. 보관글은 상세 URL 로 들어온 방문자에게만 열린다(색인 대상 아님).
  */
+/**
+ * 목록에 실을 최대 글 수 (2026-08-10 W3 — 50 → 100).
+ *
+ * ★글 상세에 다른 글로 가는 링크가 **하나도 없다**(라이브 실측). 이 목록이 글에 닿는
+ *   유일한 내부 경로라, 상한을 넘긴 글은 사이트맵에만 있고 사이트 안에서는 못 가는 고아 글이 된다.
+ * ★임시 방편이다 — 100 도 발행이 빠른 사이트는 몇 달이면 닿는다. 진짜 해법은 목록 페이지네이션인데
+ *   목록 화면이 사이트마다 달라 기계 적용이 안 된다(별건).
+ */
+const LIST_LIMIT = 100;
+
 export async function listBlogPosts(): Promise<BlogPost[]> {
   if (!configured()) {
     console.warn(`[blog] ${NO_CONFIG_REASON} 빈 목록을 반환합니다.`);
@@ -252,7 +262,7 @@ export async function listBlogPosts(): Promise<BlogPost[]> {
         `&site_id=eq.${SITE_ID}` +
         `&status=eq.published` +
         `&order=published_at.desc.nullslast,generated_at.desc` +
-        `&limit=50`,
+        `&limit=${LIST_LIMIT}`,
     );
     return rows.map((r) => normalize(r, VISIBLE({ index: true, reason: "published" })));
   } catch (err) {

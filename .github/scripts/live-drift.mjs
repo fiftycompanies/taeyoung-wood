@@ -238,17 +238,52 @@ async function main() {
       let liveId = null;
       let via = "";
       try {
-        const al = await api(`/v4/aliases?projectId=${PROJECT}&limit=100`);
-        const aliases = al?.aliases || [];
-        const custom = aliases.filter((a) => !String(a.alias).endsWith(".vercel.app"));
-        const pool = custom.length ? custom : aliases;
-        const live = pool.slice().sort((a, b) => String(a.alias).length - String(b.alias).length)[0];
-        if (live?.deploymentId) {
-          liveId = live.deploymentId;
-          via = `별칭 ${live.alias}`;
+        // ★대상은 **프로젝트에 등록된 도메인**이다(2026-08-13 중앙 실측 후 정본 교체).
+        //   종전엔 별칭 목록 1페이지에서 «가장 짧은 것 1개»를 골랐는데, 그 규칙은 두 방향으로 틀린다:
+        //   ① 별칭이 100개를 넘으면(브랜치 미리보기가 쌓인다) 진짜 고객 주소가 1페이지 밖으로 밀린다.
+        //      정렬이 최신순이라 limit 을 올려도 못 닿는다 — 중앙 admin 이 실제로 그 상태였다(898개).
+        //   ② 옛 호스트를 301 껍데기로 남겨두면 그게 진짜 도메인보다 짧을 수 있다
+        //      (`caravan.revrun.kr`(17) < `nujeonelectric.com`(18) — 활성 리다이렉트 15건 중 3건).
+        //      그러면 감시가 껍데기와 대조해 오탐·거짓초록을 양쪽으로 낸다.
+        //   ※이 저장소 함대 실측(2026-08-14, 57프로젝트): 지금은 옛·새 규칙이 같은 배포를 고른다.
+        //     즉 이 봉합은 **아직 안 터진 자리를 막는 것**이다(별칭이 쌓이거나 껍데기가 생기면 터진다).
+        const hosts = [];
+        let until;
+        for (let page = 0; page < 20; page++) {
+          const d = await api(`/v9/projects/${PROJECT}/domains?limit=100${until ? `&until=${until}` : ""}`);
+          for (const dom of d?.domains || []) {
+            const n = typeof dom === "string" ? dom : dom?.name;
+            if (n && !n.endsWith(".vercel.app") && !n.startsWith("*.")) hosts.push(n);
+          }
+          until = d?.pagination?.next;
+          if (!until || !(d?.domains || []).length) break;
+        }
+        // 호스트마다 **경로형 단건 조회**로 포인터를 읽는다.
+        // ★질의형 `/v4/aliases?domain=<host>` 은 0건을 돌려준다(라이브 반증 완료) — 경로형만 작동한다.
+        const pointers = [];
+        for (const h of hosts) {
+          const a = await api(`/v4/aliases/${encodeURIComponent(h)}`);
+          if (a?.deploymentId) pointers.push({ host: h, id: a.deploymentId });
+        }
+        if (pointers.length) {
+          // 호스트끼리 갈리면 그 자체가 신호다. 대조는 다수결 쪽으로 하되 갈림을 반드시 남긴다.
+          const tally = new Map();
+          for (const p of pointers) tally.set(p.id, (tally.get(p.id) || 0) + 1);
+          const [topId, topN] = [...tally.entries()].sort((a, b) => b[1] - a[1])[0];
+          if (tally.size > 1) {
+            console.log(
+              `::warning::도메인마다 가리키는 배포가 다르다 — ${pointers
+                .map((p) => `${p.host}→${p.id}`)
+                .join(", ")}`,
+            );
+          }
+          liveId = topId;
+          via = `등록 도메인 ${topN}/${pointers.length}곳 일치`;
+        } else if (hosts.length === 0) {
+          console.log("커스텀 도메인이 0곳 — 프로젝트 프로덕션 포인터로 물러선다");
         }
       } catch (err) {
-        console.log(`::warning::별칭 조회 실패(${err.message}) — 프로젝트 프로덕션 포인터로 물러선다`);
+        console.log(`::warning::도메인·별칭 조회 실패(${err.message}) — 프로젝트 프로덕션 포인터로 물러선다`);
       }
       const proj = await api(`/v9/projects/${PROJECT}`);
       if (!liveId && proj?.targets?.production?.id) {

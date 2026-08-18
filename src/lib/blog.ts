@@ -29,6 +29,8 @@ const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID;
 
 /** images 컬럼은 jsonb 배열(객체 배열) — 첫 요소의 url 을 썸네일로 사용 */
+import { isMarkdownContent, markdownToHtml } from "@/lib/blog-markdown";
+
 type BlogImage = { url?: string; alt?: string } | string;
 
 export type BlogPostRaw = {
@@ -374,5 +376,10 @@ export function cleanBlogContent(html: string): string {
   out = out.replace(/^\s*<title>[\s\S]*?<\/title>\s*/i, "");
   // 미치환 {{markers}} 제거
   out = out.replace(/\{\{[^}]+\}\}/g, "");
+  // 본문이 마크다운 원고면 화면용 HTML 로 바꾼다(백과사전형 글). 태그가 하나라도 있으면
+  // 기존 HTML 경로 그대로 — 지금 정상인 글의 렌더를 건드리지 않기 위한 보수적 분기.
+  if (isMarkdownContent(out)) {
+    out = markdownToHtml(out);
+  }
   return out;
 }

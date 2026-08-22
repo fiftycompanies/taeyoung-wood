@@ -259,14 +259,23 @@ export async function listBlogPosts(): Promise<BlogPost[]> {
     return [];
   }
   try {
+    // ★목록도 **판정기를 통과시킨다** (2026-08-22 실사고).
+    //   예전엔 status=published 만 보고 무조건 「노출」로 못박아, 숨김(audit_status=noindex)
+    //   처리한 글이 **개별 페이지에선 noindex 인데 목록에는 그대로 남았다**.
+    //   판정을 두 벌 두면 한쪽만 옛날이 된다 — 상세와 같은 computeVisibility 하나만 쓴다.
     const rows = await rest<BlogPostRaw[]>(
-      `blog_posts?select=${SELECT_COLS}` +
+      `blog_posts?select=${SELECT_COLS_DETAIL}` +
         `&site_id=eq.${SITE_ID}` +
         `&status=eq.published` +
         `&order=published_at.desc.nullslast,generated_at.desc` +
         `&limit=${LIST_LIMIT}`,
     );
-    return rows.map((r) => normalize(r, VISIBLE({ index: true, reason: "published" })));
+    return rows
+      .map((r) => {
+        const v = computeVisibility(r);
+        return v && v.index ? normalize(r, v) : null;
+      })
+      .filter((p): p is BlogPost => p !== null);
   } catch (err) {
     console.error("[blog] list failed", err);
     return [];

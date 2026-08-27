@@ -261,7 +261,7 @@ function normalize(row: BlogPostRaw, visibility: BlogVisibility): BlogPost {
 const SELECT_COLS =
   "id,slug,title,content,meta_description,images,published_at,generated_at";
 /** 상세는 노출 판정에 필요한 상태 컬럼까지 읽는다 */
-const SELECT_COLS_DETAIL = `${SELECT_COLS},status,audit_status,quality_score`;
+const SELECT_COLS_DETAIL = `${SELECT_COLS},status,audit_status,quality_score,indexed_google,indexed_naver,index_coverage_state`;
 
 /**
  * 목록 — site_id + published 강제 필터 + 최신 50개.

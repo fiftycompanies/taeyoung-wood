@@ -48,6 +48,10 @@ export type BlogPostRaw = {
   archive_reason?: string | null;
   /** 환각 목록은 색인 차단 판정에 쓴다(2건 이상 = 사실 신뢰 불가) */
   quality_score?: { totalScore?: number; hallucinations?: unknown[] } | null;
+  /** 이미 검색에 올라갔나 — 점수 게이트 예외 재료(2026-08-27). 조회에서 빠지면 예외가 조용히 꺼진다. */
+  indexed_google?: boolean | null;
+  indexed_naver?: boolean | null;
+  index_coverage_state?: string | null;
 };
 
 /** 노출 판정 결과 — 라우트가 robots 메타·보관 안내 배너를 결정하는 데 쓴다 */
@@ -116,6 +120,25 @@ const QUALITY_NOINDEX_THRESHOLD = 75;
 const HALLUCINATION_BLOCK_MIN = 2;
 const SOFT_404_MIN_CONTENT = 500;
 const SOFT_404_PLACEHOLDER_MIN = 3;
+/**
+ * 이미 검색에 올라가 있나 — 점수 게이트의 **예외 조건**(kk 2026-08-27 「유입이나 색인이 있으면 빼지 말자」).
+ * ★부분일치 금지: `"Crawled - currently not indexed"` 안에도 `indexed` 가 들어 있어 판정이 뒤집힌다.
+ *   실제 쓰이는 값만 나열하고, 목록 밖은 색인 아님으로 본다(fail-closed).
+ * 정본: construction-factory/site-template/src/lib/seo/post-visibility.ts (alreadyIndexed)
+ */
+const GSC_INDEXED_STATES = new Set(["submitted and indexed", "indexed, not submitted in sitemap"]);
+function alreadyIndexed(row: {
+  indexed_google?: boolean | null;
+  indexed_naver?: boolean | null;
+  index_coverage_state?: string | null;
+}): boolean {
+  return (
+    row.indexed_google === true ||
+    row.indexed_naver === true ||
+    GSC_INDEXED_STATES.has((row.index_coverage_state ?? "").trim().toLowerCase())
+  );
+}
+
 const PLACEHOLDER_RE = /\[추후 보완\]|\[placeholder\]|\bTODO\b|\bFIXME\b|XXX:/gi;
 
 const VISIBLE = (over: Partial<BlogVisibility> & { reason: string }): BlogVisibility => ({
@@ -128,7 +151,7 @@ const VISIBLE = (over: Partial<BlogVisibility> & { reason: string }): BlogVisibi
 
 /** null = 하드 제거(404). 그 외 = 200 으로 열되 robots/배너를 visibility 로 지시. */
 /** 사이트맵 경로는 본문을 싣지 않으므로 content 없이도 판정할 수 있어야 한다(정본과 같은 설계). */
-type VisibilityInput = Pick<BlogPostRaw, "status" | "audit_status" | "archive_reason" | "quality_score"> & {
+type VisibilityInput = Pick<BlogPostRaw, "status" | "audit_status" | "archive_reason" | "quality_score" | "indexed_google" | "indexed_naver" | "index_coverage_state"> & {
   content?: string | null;
 };
 
@@ -192,7 +215,8 @@ function computeVisibility(row: VisibilityInput): BlogVisibility | null {
 
   //   (8) 품질 점수 미달 — 색인만 막고 링크는 넘긴다(자산 보존)
   const score = row.quality_score?.totalScore;
-  if (typeof score === "number" && score < QUALITY_NOINDEX_THRESHOLD) {
+  //   ★이미 검색에 올라간 글은 점수로 빼지 않는다(kk 2026-08-27 · alreadyIndexed 머리말).
+  if (typeof score === "number" && score < QUALITY_NOINDEX_THRESHOLD && !alreadyIndexed(row)) {
     return VISIBLE({ reason: "low_quality" });
   }
 
@@ -329,7 +353,7 @@ const SLUG_PAGE_SIZE = 200;
 const SLUG_MAX_PAGES = 50; // 폭주 방지 — 최대 10,000편
 
 /** 사이트맵용 조회 행 — 본문은 싣지 않는다(정본도 사이트맵에서 soft404 를 판정하지 않는다). */
-type SlugRow = Pick<BlogPostRaw, "slug" | "published_at" | "status" | "audit_status" | "quality_score"> & {
+type SlugRow = Pick<BlogPostRaw, "slug" | "published_at" | "status" | "audit_status" | "quality_score" | "indexed_google" | "indexed_naver" | "index_coverage_state"> & {
   sitemap_lastmod?: string | null;
 };
 
@@ -348,7 +372,7 @@ export async function getBlogSlugs(): Promise<{ slug: string; updated: string | 
         //   품질 게이트를 상세에만 붙였던 동안 사이트맵은 저품질 글까지 제출하고 페이지는 noindex 라
         //   서치콘솔에 "제출된 URL 이 noindex" 경고가 쌓였다(papershred 라이브 실측: 표본 6편 중 3편).
         //   본문(content)은 일부러 안 싣는다 — 정본도 사이트맵에서는 soft404 를 판정하지 않는다.
-        `blog_posts?select=slug,published_at,sitemap_lastmod,status,audit_status,quality_score` +
+        `blog_posts?select=slug,published_at,sitemap_lastmod,status,audit_status,quality_score,indexed_google,indexed_naver,index_coverage_state` +
           `&site_id=eq.${SITE_ID}` +
           `&status=eq.published` +
           `&order=published_at.desc.nullslast,generated_at.desc,id.asc` +

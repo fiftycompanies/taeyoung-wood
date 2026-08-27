@@ -52,6 +52,8 @@ export type BlogPostRaw = {
   indexed_google?: boolean | null;
   indexed_naver?: boolean | null;
   index_coverage_state?: string | null;
+  /** 한 번이라도 검색에 있었음을 관측한 시각 — **래치**(DB 트리거가 채우고 절대 안 지운다). */
+  index_seen_at?: string | null;
 };
 
 /** 노출 판정 결과 — 라우트가 robots 메타·보관 안내 배너를 결정하는 데 쓴다 */
@@ -131,7 +133,11 @@ function alreadyIndexed(row: {
   indexed_google?: boolean | null;
   indexed_naver?: boolean | null;
   index_coverage_state?: string | null;
+  /** 한 번이라도 검색에 있었음을 관측한 시각 — **래치**(DB 트리거가 채우고 절대 안 지운다). */
+  index_seen_at?: string | null;
 }): boolean {
+  // ★래치가 정본 — 「지금 색인돼 있나」만 보면 우리가 이미 뺀 글이 안 돌아오고, 억지로 되살리면 깜빡인다.
+  if (row.index_seen_at) return true;
   return (
     row.indexed_google === true ||
     row.indexed_naver === true ||
@@ -151,7 +157,7 @@ const VISIBLE = (over: Partial<BlogVisibility> & { reason: string }): BlogVisibi
 
 /** null = 하드 제거(404). 그 외 = 200 으로 열되 robots/배너를 visibility 로 지시. */
 /** 사이트맵 경로는 본문을 싣지 않으므로 content 없이도 판정할 수 있어야 한다(정본과 같은 설계). */
-type VisibilityInput = Pick<BlogPostRaw, "status" | "audit_status" | "archive_reason" | "quality_score" | "indexed_google" | "indexed_naver" | "index_coverage_state"> & {
+type VisibilityInput = Pick<BlogPostRaw, "status" | "audit_status" | "archive_reason" | "quality_score" | "indexed_google" | "indexed_naver" | "index_coverage_state" | "index_seen_at"> & {
   content?: string | null;
 };
 
@@ -261,7 +267,7 @@ function normalize(row: BlogPostRaw, visibility: BlogVisibility): BlogPost {
 const SELECT_COLS =
   "id,slug,title,content,meta_description,images,published_at,generated_at";
 /** 상세는 노출 판정에 필요한 상태 컬럼까지 읽는다 */
-const SELECT_COLS_DETAIL = `${SELECT_COLS},status,audit_status,quality_score,indexed_google,indexed_naver,index_coverage_state`;
+const SELECT_COLS_DETAIL = `${SELECT_COLS},status,audit_status,quality_score,indexed_google,indexed_naver,index_coverage_state,index_seen_at`;
 
 /**
  * 목록 — site_id + published 강제 필터 + 최신 50개.
@@ -353,7 +359,7 @@ const SLUG_PAGE_SIZE = 200;
 const SLUG_MAX_PAGES = 50; // 폭주 방지 — 최대 10,000편
 
 /** 사이트맵용 조회 행 — 본문은 싣지 않는다(정본도 사이트맵에서 soft404 를 판정하지 않는다). */
-type SlugRow = Pick<BlogPostRaw, "slug" | "published_at" | "status" | "audit_status" | "quality_score" | "indexed_google" | "indexed_naver" | "index_coverage_state"> & {
+type SlugRow = Pick<BlogPostRaw, "slug" | "published_at" | "status" | "audit_status" | "quality_score" | "indexed_google" | "indexed_naver" | "index_coverage_state" | "index_seen_at"> & {
   sitemap_lastmod?: string | null;
 };
 
@@ -372,7 +378,7 @@ export async function getBlogSlugs(): Promise<{ slug: string; updated: string | 
         //   품질 게이트를 상세에만 붙였던 동안 사이트맵은 저품질 글까지 제출하고 페이지는 noindex 라
         //   서치콘솔에 "제출된 URL 이 noindex" 경고가 쌓였다(papershred 라이브 실측: 표본 6편 중 3편).
         //   본문(content)은 일부러 안 싣는다 — 정본도 사이트맵에서는 soft404 를 판정하지 않는다.
-        `blog_posts?select=slug,published_at,sitemap_lastmod,status,audit_status,quality_score,indexed_google,indexed_naver,index_coverage_state` +
+        `blog_posts?select=slug,published_at,sitemap_lastmod,status,audit_status,quality_score,indexed_google,indexed_naver,index_coverage_state,index_seen_at` +
           `&site_id=eq.${SITE_ID}` +
           `&status=eq.published` +
           `&order=published_at.desc.nullslast,generated_at.desc,id.asc` +

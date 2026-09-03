@@ -16,6 +16,9 @@ import {
 import { CtaTracker } from "@/components/CtaTracker";
 
 export const metadata: Metadata = {
+  // ★네이버 서치어드바이저 소유확인 (2026-09-03 발급 · taeyoung-interior.revrun.kr).
+  //   이 클론은 어드민 DB 를 안 읽으므로 값을 여기 직접 둔다.
+  other: { "naver-site-verification": "5c8ef426a86328e73322cf14765b87007099fe50" },
   metadataBase: new URL(SITE_URL),
   title: {
     default: `${SITE_NAME} — 20년 경력 아파트 홈인테리어 목공·단열 전문`,

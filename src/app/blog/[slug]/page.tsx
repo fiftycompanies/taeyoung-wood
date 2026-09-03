@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBlogPostBySlug } from "@/lib/blog";
+import { getBlogPostBySlug, cleanBlogContent } from "@/lib/blog";
 import { BLOG_POSTS as STATIC_POSTS } from "@/lib/blog-data";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         <section className="gp-section">
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px" }}>
-            <div className="prose" dangerouslySetInnerHTML={{ __html: supa.content }} />
+            <div className="prose" dangerouslySetInnerHTML={{ __html: cleanBlogContent(supa.content, supa.images ?? undefined) }} />
             <div style={{ marginTop: 40, padding: 24, background: "#f5f5f5", borderRadius: 12 }}>
               <strong>부분시공 견적이 필요하신가요?</strong>
               <p style={{ marginTop: 8, color: "#555" }}>현장 사진과 원하는 시공 범위를 문자로 보내주시면 참고 견적 안내드립니다. 확정 견적은 실측 후 진행.</p>

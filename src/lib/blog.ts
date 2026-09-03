@@ -29,7 +29,7 @@ const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID;
 
 /** images 컬럼은 jsonb 배열(객체 배열) — 첫 요소의 url 을 썸네일로 사용 */
-import { isMarkdownContent, markdownToHtml } from "@/lib/blog-markdown";
+import { isMarkdownContent, markdownToHtml, fillImgPlaceholders, sanitizeInlineMarkdown } from "@/lib/blog-markdown";
 
 type BlogImage = { url?: string; alt?: string } | string;
 
@@ -77,6 +77,8 @@ export type BlogPost = {
   content: string;
   excerpt: string | null;
   thumbnail_url: string | null;
+  /** 사진 목록 원본 — 본문의 `<!-- IMG -->` 자리표시를 채우는 데 쓴다(2026-09-03). */
+  images: BlogImage[] | null;
   published_at: string | null;
   created_at: string;
   visibility: BlogVisibility;
@@ -257,6 +259,7 @@ function normalize(row: BlogPostRaw, visibility: BlogVisibility): BlogPost {
     content: bodyFor(row, visibility),
     excerpt: row.meta_description,
     thumbnail_url: firstImageUrl(row.images),
+    images: row.images ?? null,
     published_at: row.published_at,
     // 정렬/표시용 fallback: published_at → generated_at
     created_at: row.published_at ?? row.generated_at ?? new Date().toISOString(),
@@ -409,7 +412,7 @@ export async function getBlogSlugs(): Promise<{ slug: string; updated: string | 
 }
 
 /** content 가 인라인 스타일 HTML 이므로 안전하게 노출 전 정리 */
-export function cleanBlogContent(html: string): string {
+export function cleanBlogContent(html: string, images?: unknown[]): string {
   let out = html;
   // 선행 <title> 제거 (REVRUN 자동생성 콘텐츠 컨벤션)
   out = out.replace(/^\s*<title>[\s\S]*?<\/title>\s*/i, "");
@@ -417,8 +420,12 @@ export function cleanBlogContent(html: string): string {
   out = out.replace(/\{\{[^}]+\}\}/g, "");
   // 본문이 마크다운 원고면 화면용 HTML 로 바꾼다(백과사전형 글). 태그가 하나라도 있으면
   // 기존 HTML 경로 그대로 — 지금 정상인 글의 렌더를 건드리지 않기 위한 보수적 분기.
+  //   ★2026-09-03: images 를 함께 넘긴다 — 안 넘기면 `<!-- IMG -->` 자리표시가 안 채워진다.
   if (isMarkdownContent(out)) {
-    out = markdownToHtml(out);
+    out = markdownToHtml(out, images);
+  } else {
+    out = fillImgPlaceholders(out, images);
+    out = sanitizeInlineMarkdown(out);
   }
   return out;
 }

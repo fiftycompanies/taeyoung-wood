@@ -21,6 +21,11 @@ const INTERNAL_NON_RESERVATION_RE = /^\/(?:blog|guide|news|notice|article)(?:\/|
 const RESERVATION_PATH_RE = /reserv|booking|\/book(?:ing)?(?:\/|$)/i;
 const KAKAO_RE = /pf\.kakao\.com|open\.kakao\.com|kakao\.com\/_/i;
 
+/** 길찾기(지도) — 예약이 아니지만 「가려는 사람」이라 따로 센다(2026-09-09). */
+const MAP_RE = /(?:map|m|pcmap|place)\.naver\.com|map\.kakao\.com|place\.map\.kakao\.com|(?:www\.)?google\.[a-z.]+\/maps|goo\.gl\/maps|maps\.app\.goo\.gl|tmap/i;
+const mapDestOf = (href: string) =>
+  /naver/i.test(href) ? "naver_map" : /kakao/i.test(href) ? "kakao_map" : /google|goo\.gl/i.test(href) ? "google_map" : "map";
+
 /** 목적지 이름 — GA4 맞춤 측정기준 `cta_dest`. 안 보내면 「어디로 보냈나」가 빈다(실측 86%가 (not set)). */
 function destOf(href: string): string {
   if (/camfit\.co\.kr/i.test(href)) return "camfit";
@@ -75,6 +80,11 @@ export function CtaTracker() {
       }
       if (RESERVATION_RE.test(href) || NAVER_ROOM_RE.test(href)) {
         track("reservation_click", { cta_label: label, cta_url: href.slice(0, 100), cta_dest: destOf(href) });
+        return;
+      }
+      // 길찾기는 예약이 아니지만 「가려는 사람」이다 — 따로 센다.
+      if (MAP_RE.test(href)) {
+        track("directions_click", { cta_label: label, cta_url: href.slice(0, 100), cta_dest: mapDestOf(href) });
       }
     }
     document.addEventListener("click", onClick, { capture: true });

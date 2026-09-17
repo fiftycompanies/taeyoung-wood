@@ -70,6 +70,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Script id="ga4-init" strategy="afterInteractive">
           {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID || "G-YNQCYYYQ2S"}',{cookie_domain:location.hostname})`}
         </Script>
+      <script src="https://site-admin.revrun.kr/api/public/site-layer" data-rv-layer-site="0148258d-076a-4419-beda-1b0eb9bba82e" async />
       </body>
     </html>
   );

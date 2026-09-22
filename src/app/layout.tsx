@@ -14,6 +14,7 @@ import {
   websiteJsonLd,
 } from "@/lib/seo";
 import { CtaTracker } from "@/components/CtaTracker";
+import { AttributionCapture } from "@/components/attribution-capture";
 
 export const metadata: Metadata = {
   // ★네이버 서치어드바이저 소유확인 (2026-09-03 발급 · taeyoung-interior.revrun.kr).
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteFooter />
         <FloatingCta />
         <ScrollReveal />
+        <AttributionCapture />
         {/* GA4 — 공유 property(hostname 별 분리 수집). 측정ID 정본 = admin/src/lib/analytics-config.ts.
             ★쿠키 범위를 자기 호스트로 고정 — 기본값(auto)은 `.revrun.kr` 에 심겨 다른 고객사 사이트와
             방문자·세션이 섞인다(2026-08-09 GA4 실측: 52곳에서 방문자 35.9% 중복). */}

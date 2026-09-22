@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getReferrer, getUtm } from "@/lib/utm";
 
 type Status = { kind: "idle" } | { kind: "sending" } | { kind: "ok" } | { kind: "error"; message: string };
 
@@ -28,8 +29,11 @@ export function ContactForm() {
       service_type: String(data.get("service_type") ?? ""),
       region: String(data.get("region") ?? ""),
       sourceUrl: typeof window !== "undefined" ? window.location.href : null,
-      referrer: typeof document !== "undefined" ? document.referrer : null,
+      // 광고 유입 추적 — 레이아웃이 첫 진입 페이지에서 저장해 둔 최초 외부 referrer·UTM
+      // (이 화면의 document.referrer 는 자기 사이트라 그대로 보내면 「직접 유입」으로 잡힌다).
+      referrer: getReferrer(),
       formLocation: "/contact",
+      ...getUtm(),
     };
 
     setStatus({ kind: "sending" });

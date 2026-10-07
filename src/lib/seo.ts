@@ -13,7 +13,7 @@
 /** 배포 도메인. 독립 도메인 이전 시 env 로 덮어쓴다(/onboard-site 소관). */
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://taeyoung-wood.revrun.kr";
+  "https://taeyoung-interior.revrun.kr";
 
 export const SITE_NAME = "태영목공";
 export const SITE_LEGAL_NAME = "태영 인테리어";

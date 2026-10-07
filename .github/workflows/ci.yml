@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Metadata regression tests
+        run: npm run test
+
       - name: Lint
         run: npm run lint
 

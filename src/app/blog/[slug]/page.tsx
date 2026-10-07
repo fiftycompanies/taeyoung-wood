@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, cleanBlogContent } from "@/lib/blog";
 import { BLOG_POSTS as STATIC_POSTS } from "@/lib/blog-data";
+import { blogMetadata } from "@/lib/blog-metadata";
+import { SITE_URL } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -35,8 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supa = await getBlogPostBySlug(decoded);
   if (supa) {
     return {
-      title: `${supa.title} | 태영목공`,
-      description: supa.excerpt ?? undefined,
+      ...blogMetadata({ slug: supa.slug, title: supa.title, excerpt: supa.excerpt, image: supa.thumbnail_url }, SITE_URL),
       ...(supa.visibility.index
         ? {}
         : { robots: { index: false, follow: supa.visibility.follow } }),
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const staticPost = STATIC_POSTS.find((p) => p.slug === decoded);
   if (!staticPost) return { title: "블로그 | 태영목공" };
-  return { title: `${staticPost.title} | 태영목공`, description: staticPost.excerpt };
+  return blogMetadata(staticPost, SITE_URL);
 }
 
 export default async function BlogPostPage({ params }: Props) {

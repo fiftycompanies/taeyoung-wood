@@ -1,0 +1,33 @@
+# 전화번호 검사 — 클론 사이트판.
+#
+# 왜 필요한가 (2026-11-06 실측): revrun 저장소의 전 저장소 검사는 **클론을 한 줄도 못 본다**
+# — 클론은 각자 별도 저장소이고 db_mkt 의 `site-cloner/clones/.gitignore` 가 통째로 제외한다.
+# 실제로 클론 37곳에 서로 다른 번호 46개가 남아 있었고, 그중 상당수가 **남의 업체 번호**였다
+# (참고용으로 긁어 온 다른 홈페이지의 docs/research/*.html).
+#
+# 무엇을 보나: 「번호 금지」가 아니라 **「기준선보다 늘었나」**.
+#   클론에는 그 업체 자신의 번호가 반드시 들어 있다(화면에 띄워야 한다) — 그걸 지우면 라이브가 깨진다.
+#
+# ★검사기·기준선·이 파일을 **모두 `.github/` 아래** 둔다 — 그 경로가 deploy.yml 의 paths-ignore 라
+#   클론 40여 곳에 한꺼번에 깔아도 **고객 사이트가 다시 배포되지 않는다**(의도한 것).
+name: pii-scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  pii-scan:
+    name: 전화번호 검사
+    runs-on: ubuntu-24.04 # ★latest 고정 금지 — 26.04 전환 때 다른 워크플로가 조용히 깨졌다(2026-11-04)
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # ★`if:` 로 감싸지 말 것 — rc 1(늘어남)과 rc 2(기준선 문제)를 둘 다 실패로 봐야 한다.
+      #   뭉개면 「검사가 죽은 줄 모르고 초록」이 된다.
+      - run: node .github/scripts/pii-scan.mjs

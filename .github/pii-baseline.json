@@ -1,0 +1,16 @@
+{
+  "note": "파일별 전화번호 **개수**만 적는다(번호 자체는 절대 적지 않는다). 늘면 빨간불, 줄었는데 여기를 안 고쳐도 빨간불 — 한 번 내려간 선은 다시 안 오른다.",
+  "updated": "2026-11-06",
+  "files": {
+    "docs/research/interaction-audit/clone.json": 15,
+    "src/app/blog/[slug]/page.tsx": 2,
+    "src/app/contact/page.tsx": 2,
+    "src/app/page.tsx": 2,
+    "src/app/privacy/page.tsx": 1,
+    "src/components/contact-form.tsx": 1,
+    "src/components/floating-cta.tsx": 1,
+    "src/components/site-footer.tsx": 2,
+    "src/components/site-header.tsx": 2,
+    "src/lib/seo.ts": 1
+  }
+}

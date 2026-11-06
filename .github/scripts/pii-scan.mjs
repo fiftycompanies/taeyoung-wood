@@ -73,6 +73,8 @@ function inHost(s, start, end) {
 
 const SPLIT = /["'](01[016789])["']\s*[,+]\s*["'](\d{3,4})["']\s*[,+]\s*["'](\d{4})["']/g;
 
+export const isBinary = (buf) => buf.includes(0);
+
 export function findPhones(text) {
   const masked = text.replace(SAFE, (m) => "\u0000".repeat(m.length));
   const out = [];
@@ -103,10 +105,12 @@ export function scanTracked(cwd = process.cwd()) {
   for (const f of files) {
     try {
       if (statSync(f).size > MAX_BYTES) continue;
-      const n = findPhones(readFileSync(f, "utf8")).length;
+      const buf = readFileSync(f);
+      if (isBinary(buf)) continue;        // ★그림·글꼴 등 — 글자로 읽으면 헛검출이 난다
+      const n = findPhones(buf.toString("utf8")).length;
       if (n) counts[f] = n;
     } catch {
-      /* 바이너리·심링크·없는 파일 */
+      /* 심링크·없는 파일 */
     }
   }
   return { fileCount: files.length, counts };

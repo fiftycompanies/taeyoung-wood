@@ -79,7 +79,6 @@ export async function POST(req: NextRequest) {
     method: "POST",
     headers: {
       apikey: SUPABASE_ANON as string,
-      Authorization: `Bearer ${SUPABASE_ANON}`,
       "Content-Type": "application/json",
       Prefer: "return=minimal",
     },

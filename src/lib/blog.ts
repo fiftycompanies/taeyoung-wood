@@ -96,7 +96,6 @@ async function rest<T>(path: string): Promise<T> {
   const res = await fetch(url, {
     headers: {
       apikey: SUPABASE_ANON!,
-      Authorization: `Bearer ${SUPABASE_ANON!}`,
     },
     // ISR-friendly
     next: { revalidate: 300, tags: ["blog-posts"] },

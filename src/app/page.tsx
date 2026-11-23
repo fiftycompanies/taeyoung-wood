@@ -8,8 +8,8 @@ import { HomeTips } from "@/components/home/HomeTips";
 import { HomeFaq } from "@/components/home/HomeFaq";
 import { HomeWhyUs } from "@/components/home/HomeWhyUs";
 
-const PHONE_TEL = ["010", "8835", "7775"].join("");
-const PHONE_DISPLAY = ["010", "8835", "7775"].join("-");
+const PHONE_TEL = ["050", "7458", "4929"].join("");
+const PHONE_DISPLAY = ["050", "7458", "4929"].join("-");
 
 // 판교 신축빌라 등박스 시공 완료 현장 — 실제 태영목공 시공 사진(네이버 블로그 woodty)
 const HERO_BG = "/images/hero.jpg";

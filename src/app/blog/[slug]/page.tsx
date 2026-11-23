@@ -13,8 +13,8 @@ export const revalidate = 300;
 // Supabase 발행 글은 사전 정적 파라미터 밖에서도 200 으로 열려야 함
 export const dynamicParams = true;
 
-const PHONE_TEL = ["010", "8835", "7775"].join("");
-const PHONE_DISPLAY = ["010", "8835", "7775"].join("-");
+const PHONE_TEL = ["050", "7458", "4929"].join("");
+const PHONE_DISPLAY = ["050", "7458", "4929"].join("-");
 
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "";

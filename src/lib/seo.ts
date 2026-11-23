@@ -26,7 +26,7 @@ export const NAP = {
   name: SITE_NAME,
   legalName: SITE_LEGAL_NAME,
   principal: "전동현",
-  phone: ["010", "8835", "7775"].join("-"),
+  phone: ["050", "7458", "4929"].join("-"),
   streetAddress: "장안로 232",
   addressLocality: "수원시 장안구",
   addressRegion: "경기도",

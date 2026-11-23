@@ -14,8 +14,8 @@ const NAV = [
   { label: "서비스지역", href: "/#regions" },
 ];
 
-const PHONE = ["010", "8835", "7775"].join("-");
-const PHONE_TEL = ["010", "8835", "7775"].join("");
+const PHONE = ["050", "7458", "4929"].join("-");
+const PHONE_TEL = ["050", "7458", "4929"].join("");
 
 function PhoneIcon({ size = 18 }: { size?: number }) {
   return (

@@ -72,7 +72,7 @@ export function ContactForm() {
         <p style={{ marginTop: 8, color: "#555", lineHeight: 1.7 }}>
           영업일 기준 빠른 시간 내 대표 전동현이 직접 연락드립니다.
           <br />
-          급하실 경우 <strong>010-8835-7775</strong> 로 전화 주세요.
+          급하실 경우 <strong>050-7458-4929</strong> 로 전화 주세요.
         </p>
       </div>
     );

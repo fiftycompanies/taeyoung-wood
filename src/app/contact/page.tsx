@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-const PHONE_TEL = ["010", "8835", "7775"].join("");
-const PHONE_DISPLAY = ["010", "8835", "7775"].join("-");
+const PHONE_TEL = ["050", "7458", "4929"].join("");
+const PHONE_DISPLAY = ["050", "7458", "4929"].join("-");
 
 export default function ContactPage() {
   return (

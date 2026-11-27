@@ -35,5 +35,8 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      - name: 문의 입구 가드
+        run: node --test scripts/inquiry-intake-guard.test.mjs
+
       - name: Build
         run: npm run build

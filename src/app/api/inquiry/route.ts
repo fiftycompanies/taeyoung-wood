@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { encryptPhone, isCompleteKrMobile } from "@/lib/phone-crypto";
+import { isCompleteKrMobile } from "@/lib/phone-crypto";
 
 /**
- * 리드 수집 — REVRUN inquiries 파이프라인에 anon INSERT.
- * supabase-js 미설치 → anon REST fetch 로 동일 동작.
- *
- * PII: phone 은 AES-256-GCM 암호화 저장(평문 INSERT 금지). 실패 시 명시적 500.
- * 멀티테넌트: env NEXT_PUBLIC_SITE_ID 상수만. x-site-id 헤더 무시(크로스테넌트 봉합 · 2026-07-16).
+ * 문의 접수 — 어드민 공용 접수 창구로 넘긴다(문의봇 차단 V6, 2026-11-27).
+ * 이 서버는 DB 에 직접 쓰지 않는다. 사이트 전용 열쇠(SITE_INTAKE_KEY)는 이 사이트에만 넣을 수 있고,
+ * 전화 암호화·거르기·길이 상한·자동 스팸 판정은 어드민 창구가 한다.
  */
 
 // env 는 .trim() — Vercel 주입 시 후행 개행/공백이 uuid/URL 캐스팅을 깨뜨림(방어).
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+const ADMIN_API_URL = process.env.ADMIN_API_URL?.trim();
+const SITE_INTAKE_KEY = process.env.SITE_INTAKE_KEY?.trim();
 const SITE_ID = process.env.NEXT_PUBLIC_SITE_ID?.trim();
 
 function envReady(): boolean {
-  return Boolean(SUPABASE_URL && SUPABASE_ANON && SITE_ID);
+  return Boolean(ADMIN_API_URL && SITE_INTAKE_KEY && SITE_ID);
 }
 
 function optString(v: unknown): string | null {
@@ -63,48 +61,31 @@ export async function POST(req: NextRequest) {
     if (typeof v === "string" && v.trim()) extra_fields[k] = v.trim();
   }
 
-  // phone 암호화 — 실패 시 평문 저장 금지(명시적 500, 고객엔 일반 메시지).
-  let encryptedPhone: string;
-  try {
-    encryptedPhone = encryptPhone(phone);
-  } catch (e) {
-    console.error("[inquiry] phone 암호화 실패:", e instanceof Error ? e.message : "unknown");
-    return NextResponse.json(
-      { error: "일시적 오류로 접수에 실패했습니다. 잠시 후 다시 시도해주세요." },
-      { status: 500 },
-    );
-  }
-
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/inquiries`, {
+  const res = await fetch(`${ADMIN_API_URL}/api/public/inquiry`, {
     method: "POST",
-    headers: {
-      apikey: SUPABASE_ANON as string,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
+    headers: { "Content-Type": "application/json", "X-Site-Key": SITE_INTAKE_KEY as string },
     body: JSON.stringify({
-      site_id: siteId,
+      siteId: siteId,
       name,
-      phone: encryptedPhone,
+      phone,
       message,
-      source_url: sourceUrl,
+      sourceUrl: sourceUrl,
       referrer,
-      form_location: formLocation,
+      formLocation: formLocation,
       utm_source: optString(body.utm_source),
       utm_medium: optString(body.utm_medium),
       utm_campaign: optString(body.utm_campaign),
       utm_content: optString(body.utm_content),
       utm_term: optString(body.utm_term),
-      agency_ref: optString(body.ref),
-      channel_code: "direct",
+      ref: optString(body.ref),
       extra_fields,
-      status: "new",
     }),
-  });
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => null);
 
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    console.error("[inquiry] INSERT 실패:", res.status, detail.slice(0, 200));
+  if (!res?.ok) {
+    const detail = (await res?.text().catch(() => "")) ?? "";
+    console.error("[inquiry] INSERT 실패:", res?.status, detail.slice(0, 200));
     return NextResponse.json(
       { error: "접수에 실패했습니다. 잠시 후 다시 시도해주세요." },
       { status: 500 },
